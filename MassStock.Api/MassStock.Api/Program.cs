@@ -46,15 +46,18 @@ builder.Services.AddAuthorization();
 // Origen del Angular en desarrollo (ng serve). Ajusta/agrega orígenes
 // cuando despliegues el frontend a otra URL.
 const string AngularDevPolicy = "AngularDev";
+
+var frontendUrl = builder.Configuration["FrontendUrl"]
+                  ?? "http://localhost:4200";
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(AngularDevPolicy, policy =>
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(frontendUrl)
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials()); // requerido por SignalR
+              .AllowCredentials());
 });
-
 var app = builder.Build();
 
 // --- Middleware ---
