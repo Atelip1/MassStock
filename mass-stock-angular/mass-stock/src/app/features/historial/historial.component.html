@@ -1,0 +1,136 @@
+<div class="page-head">
+  <div class="page-title">
+    <app-icon class="title-glyph" name="clock" [size]="42" [stroke]="2"></app-icon>
+    <div>
+      <h1>Historial de movimientos</h1>
+      <p class="page-sub">Auditoría de ingresos, reposiciones y salidas registradas en el sistema.</p>
+    </div>
+  </div>
+  <div class="segmented">
+    <button *ngFor="let f of filtros" [class.active]="filtro === f.valor" (click)="cambiarFiltro(f.valor)">{{ f.label }}</button>
+  </div>
+</div>
+
+<div *ngIf="errorMsg" class="msg err"><app-icon name="alert" [size]="16"></app-icon>{{ errorMsg }}</div>
+<div *ngIf="loading" class="empty">Cargando historial…</div>
+
+<ng-container *ngIf="!loading && !errorMsg">
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-icon"><app-icon name="arrow-right" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ contar('todos') }}</div>
+        <div class="kpi-label">movimientos totales</div>
+      </div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-icon"><app-icon name="arrow-right" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ contar('ingreso') }}</div>
+        <div class="kpi-label">ingresos de proveedor</div>
+      </div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-icon"><app-icon name="refresh" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ contar('reposicion') }}</div>
+        <div class="kpi-label">reposiciones de percha</div>
+      </div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-icon"><app-icon name="arrow-up-right" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ contar('salida') }}</div>
+        <div class="kpi-label">salidas (ventas/ajustes)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="filters">
+      <div class="f range">
+        <span>Rango de fechas</span>
+        <div class="range-inputs">
+          <input class="input" type="date" [(ngModel)]="desde" (ngModelChange)="pagina = 1" aria-label="Desde" />
+          <span>–</span>
+          <input class="input" type="date" [(ngModel)]="hasta" (ngModelChange)="pagina = 1" aria-label="Hasta" />
+        </div>
+      </div>
+      <div class="f grow">
+        <span>Producto</span>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="search"></app-icon>
+          <input type="search" placeholder="Buscar producto o SKU…" [(ngModel)]="texto" (ngModelChange)="pagina = 1" />
+        </div>
+      </div>
+      <label class="f">
+        <span>Usuario</span>
+        <div class="input-wrap has-trail">
+          <select [(ngModel)]="usuario" (ngModelChange)="pagina = 1">
+            <option value="">Todos</option>
+            <option *ngFor="let u of usuarios" [value]="u">{{ u }}</option>
+          </select>
+          <app-icon class="trail" name="chevron-down"></app-icon>
+        </div>
+      </label>
+      <button class="btn btn-outline" (click)="exportarCsv()" [disabled]="filtrados.length === 0">
+        <app-icon name="download" [size]="18"></app-icon> Descargar CSV
+      </button>
+    </div>
+
+    <div *ngIf="filtrados.length === 0" class="empty-state">
+      <app-icon name="clock" [size]="40" [stroke]="1.5"></app-icon>
+      <p class="empty-title">{{ movimientos.length === 0 ? 'Sin movimientos todavía' : 'Sin resultados' }}</p>
+      <p class="empty-copy">{{ movimientos.length === 0 ? 'Cuando se registre un ingreso, reposición o salida, aparecerá aquí.' : 'Ningún movimiento coincide con los filtros aplicados.' }}</p>
+    </div>
+
+    <div class="table-scroll" *ngIf="filtrados.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fecha y hora</th>
+            <th>Tipo</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Detalle</th>
+            <th>Usuario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of visibles">
+            <td class="muted">{{ formatearFecha(m.createdAt) }}</td>
+            <td>
+              <span class="badge" [ngClass]="claseTipo(m.tipo)">
+                <app-icon [name]="iconoTipo(m.tipo)" [size]="14" [stroke]="2.4"></app-icon>{{ etiquetaTipo(m.tipo) }}
+              </span>
+            </td>
+            <td>
+              <div class="prod-cell">
+                <span class="thumb" [ngClass]="tonoThumb(m.productoNombre)">{{ iniciales(m.productoNombre) }}</span>
+                <div>
+                  <div class="prod-name">{{ m.productoNombre }}</div>
+                  <div class="prod-sub">{{ m.productoSku }}</div>
+                </div>
+              </div>
+            </td>
+            <td [class.neg]="esSalida(m.tipo)" [class.pos]="!esSalida(m.tipo)">{{ esSalida(m.tipo) ? '-' : '+' }}{{ m.cantidad }}</td>
+            <td class="detalle">
+              <div>{{ detalleTipo(m.tipo) }}</div>
+              <div class="prod-sub" *ngIf="m.guiaRemision || m.nota">{{ m.guiaRemision || m.nota }}</div>
+            </td>
+            <td>{{ m.usuario || '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-foot" *ngIf="filtrados.length > 0">
+      <span>Mostrando <b>{{ rango }}</b> de <b>{{ filtrados.length }}</b> movimientos</span>
+      <div class="pager">
+        <button (click)="irPagina(paginaActual - 1)" [disabled]="paginaActual <= 1" aria-label="Anterior"><app-icon name="chevron-left" [size]="16"></app-icon></button>
+        <button *ngFor="let n of listaPaginas" [class.active]="n === paginaActual" [disabled]="n === '…'" (click)="irPagina(n)">{{ n }}</button>
+        <button (click)="irPagina(paginaActual + 1)" [disabled]="paginaActual >= paginas" aria-label="Siguiente"><app-icon name="chevron-right" [size]="16"></app-icon></button>
+      </div>
+    </div>
+  </div>
+</ng-container>

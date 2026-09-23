@@ -1,0 +1,18 @@
+.chart-wrap { position: relative; width: 100%; }
+.chart-svg { width: 100%; display: block; overflow: visible; }
+.grid-line { stroke: var(--line); stroke-width: 1; }
+.axis-label { font-size: 11px; fill: var(--ink-soft); font-family: var(--font-body); }
+.axis-label.x { font-size: 12px; text-transform: capitalize; }
+.hover-band { fill: transparent; }
+.hover-band.on { fill: var(--hover-tint); }
+
+.tooltip {
+  position: absolute; top: 0; transform: translate(-50%, -8px); pointer-events: none;
+  background: var(--ink); color: var(--panel); font-size: 12px; padding: 8px 11px; border-radius: 9px;
+  display: flex; flex-direction: column; gap: 3px; white-space: nowrap; box-shadow: var(--shadow-md);
+  text-transform: capitalize;
+}
+.tooltip span { display: flex; align-items: center; gap: 6px; text-transform: none; }
+.tooltip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+.chart-empty { text-align: center; padding: 30px; color: var(--ink-soft); font-size: 13px; }

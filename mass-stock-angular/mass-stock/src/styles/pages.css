@@ -1,0 +1,76 @@
+/* =====================================================================
+   Piezas compartidas entre pantallas (formularios de registro,
+   alertas, catálogo y usuarios).
+   ===================================================================== */
+.crumb-top { margin-bottom: 8px; }
+.crumb-top app-icon { color: var(--ink-soft); }
+.title-arrow { color: var(--brand-navy-dark); }
+:root.dark .title-arrow { color: var(--ink); }
+.page-title-icon.big { width: 56px; height: 56px; border-radius: 50%; }
+.meta-sep { width: 1px; height: 18px; background: var(--line-strong); margin: 0 6px; }
+.mt-10 { margin-top: 10px; }
+
+/* Panel lateral ilustrado (reposición / ingreso) */
+.side-hero { padding-top: 22px; overflow: hidden; }
+.side-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; line-height: 1.2; margin: 0 0 8px; }
+.side-copy { margin: 0; color: var(--ink-soft); font-size: 14.5px; line-height: 1.55; }
+.side-hero .type-list { margin-top: 20px; }
+.ti-icon.solid { border-radius: 50%; }
+.ti-icon.green.solid { background: var(--green); color: #fff; }
+.ti-icon.blue.solid { background: var(--brand-blue); color: #fff; }
+.side-hero .ti-icon.yellow { border-radius: 50%; }
+.quote-box {
+  display: flex; align-items: center; gap: 12px; margin-top: 22px; padding: 18px 20px;
+  border-radius: 14px; background: var(--brand-navy-dark); color: #fff; font-size: 15px; line-height: 1.3;
+}
+.quote-box .q-mark { font-family: var(--font-display); font-size: 44px; line-height: .6; color: var(--brand-yellow); align-self: flex-start; }
+.quote-box app-wordmark { margin-left: auto; }
+
+/* Registrar salida: tipos seleccionables e ilustración del carrito */
+.type-item.pick {
+  width: 100%; border: 1px solid transparent; background: none; padding: 6px 8px; margin: -6px -8px;
+  border-radius: 12px; text-align: left; cursor: pointer; color: inherit;
+}
+.type-item.pick:hover { background: color-mix(in srgb, var(--panel) 55%, transparent); }
+.type-item.pick.sel { background: var(--panel); border-color: var(--brand-yellow); box-shadow: var(--shadow-sm); }
+.cart-art {
+  width: 92px; height: 92px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center;
+  background: var(--panel); color: var(--brand-yellow);
+}
+.cart-art app-icon { filter: drop-shadow(0 3px 0 var(--brand-blue)); }
+
+/* Alertas: tarjetas informativas inferiores */
+.info-tile { display: flex; gap: 16px; align-items: flex-start; }
+.info-tile h3 { font-size: 16px; font-weight: 700; margin: 4px 0 8px; }
+.info-tile p { margin: 0; font-size: 13.5px; color: var(--ink-soft); line-height: 1.6; }
+.info-tile .grow { flex: 1; min-width: 0; }
+.info-tile .grow h3 { margin-bottom: 14px; }
+.it-icon {
+  width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;
+  background: var(--blue-soft); color: var(--blue);
+}
+.it-icon.yellow { background: var(--amber-soft); color: var(--amber); }
+
+/* Catálogo y usuarios */
+.admin-layout { display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 22px; align-items: start; }
+.admin-layout .form-card-head { margin-bottom: 22px; }
+.admin-layout .form-card-head .fc-icon { width: 50px; height: 50px; }
+.admin-layout .form-card-head h2 { font-size: 19px; }
+.admin-layout.solo-lista { grid-template-columns: minmax(0, 1fr); }
+.list-head { display: flex; align-items: center; gap: 10px; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+.form-actions.single { grid-template-columns: 1fr; }
+.add-link { margin-top: 10px; }
+.inline-add { display: flex; gap: 8px; margin-top: 10px; }
+.data-table tr.editing td { background: var(--amber-soft); }
+.solo-lectura { margin-left: auto; }
+.avatar.sm { width: 36px; height: 36px; font-size: 15px; }
+
+@media (max-width: 1100px) {
+  .admin-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .page-title-icon.big { width: 46px; height: 46px; }
+  .title-arrow, .page-title > .title-glyph { display: none; }
+  .cart-art { width: 64px; height: 64px; }
+  .quote-box app-wordmark { display: none; }
+}

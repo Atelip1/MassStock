@@ -1,0 +1,184 @@
+<div class="page-head">
+  <div class="page-title">
+    <app-icon class="title-glyph" name="bars" [size]="40" [stroke]="2.2"></app-icon>
+    <div>
+      <h1>Reportes de rotación</h1>
+      <p class="page-sub">Qué productos se mueven más, para priorizar la reposición.</p>
+    </div>
+  </div>
+  <div class="page-actions">
+    <div class="segmented">
+      <button *ngFor="let r of rangos" [class.active]="dias === r.valor" (click)="cambiarRango(r.valor)">{{ r.label }}</button>
+    </div>
+    <button class="btn btn-outline" (click)="exportarCsv()" [disabled]="loading || filas.length === 0">
+      <app-icon name="download" [size]="18"></app-icon> Descargar CSV
+    </button>
+  </div>
+</div>
+
+<div *ngIf="errorMsg" class="msg err"><app-icon name="alert" [size]="16"></app-icon>{{ errorMsg }}</div>
+<div *ngIf="loading" class="empty">Cargando reporte…</div>
+
+<ng-container *ngIf="!loading && !errorMsg">
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-icon"><app-icon name="box" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ totalUnidades }}</div>
+        <div class="kpi-label">unidades movidas</div>
+        <div class="kpi-foot muted">en los últimos {{ dias }} días</div>
+      </div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-icon"><app-icon name="note" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ totalMovimientos }}</div>
+        <div class="kpi-label">movimientos registrados</div>
+        <div class="kpi-foot muted">ingresos, reposiciones y salidas</div>
+      </div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-icon"><app-icon name="tag" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ filas.length }}</div>
+        <div class="kpi-label">productos con actividad</div>
+        <div class="kpi-foot muted">con al menos un movimiento</div>
+      </div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-icon"><app-icon name="star" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value sm">Producto más rotado</div>
+        <div class="top-name">{{ masRotado?.nombre || '—' }}</div>
+        <div class="kpi-foot muted" *ngIf="masRotado">{{ total(masRotado) }} unidades ({{ pct(total(masRotado)) }}%)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card empty-state" *ngIf="filas.length === 0">
+    <app-icon name="bars" [size]="40" [stroke]="1.5"></app-icon>
+    <p class="empty-title">Sin movimientos en este rango</p>
+    <p class="empty-copy">Sin ingresos, reposiciones ni salidas registradas en los últimos {{ dias }} días.</p>
+  </div>
+
+  <ng-container *ngIf="filas.length > 0">
+    <div class="grid-2 mb-20">
+      <div class="card">
+        <h2 class="card-title">Rotación de productos</h2>
+        <p class="card-sub">Unidades movidas por producto (últimos {{ dias }} días)</p>
+        <div class="hbars">
+          <div class="hbar" *ngFor="let f of top; let i = index">
+            <span class="hbar-name">{{ f.nombre }}</span>
+            <div class="hbar-track">
+              <div class="hbar-fill" [ngClass]="'c' + (i % 3)" [style.width.%]="(total(f) / maxTotal) * 100"></div>
+            </div>
+            <b class="hbar-val">{{ total(f) }}</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Distribución de movimientos</h2>
+        <p class="card-sub">Por tipo de operación ({{ dias }} días)</p>
+        <div class="donut-wrap">
+          <svg viewBox="0 0 160 160" class="donut" role="img" aria-label="Distribución de movimientos">
+            <circle cx="80" cy="80" r="60" class="donut-track" />
+            <circle *ngFor="let s of distribucion" cx="80" cy="80" r="60" class="donut-seg"
+                    [style.stroke]="s.color" [attr.stroke-dasharray]="s.dash" [attr.stroke-dashoffset]="s.offset" />
+            <text x="80" y="80" class="donut-num" text-anchor="middle">{{ totalUnidades }}</text>
+            <text x="80" y="100" class="donut-lbl" text-anchor="middle">unidades</text>
+          </svg>
+          <ul class="donut-legend">
+            <li *ngFor="let s of distribucion">
+              <i [style.background]="s.color"></i>
+              <span>{{ s.nombre }}</span>
+              <b>{{ s.valor }} ({{ pct(s.valor) }}%)</b>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="filters">
+        <div class="f grow">
+          <span>&nbsp;</span>
+          <div class="input-wrap has-lead">
+            <app-icon class="lead" name="search"></app-icon>
+            <input type="search" placeholder="Buscar producto o SKU…" [(ngModel)]="texto" />
+          </div>
+        </div>
+        <label class="f">
+          <span>Categoría</span>
+          <div class="input-wrap has-trail">
+            <select [(ngModel)]="categoria">
+              <option value="">Todas</option>
+              <option *ngFor="let c of categorias" [value]="c">{{ c }}</option>
+            </select>
+            <app-icon class="trail" name="chevron-down"></app-icon>
+          </div>
+        </label>
+        <label class="f">
+          <span>Ordenar por</span>
+          <div class="input-wrap has-trail">
+            <select [(ngModel)]="orden">
+              <option value="total">Más rotado</option>
+              <option value="salida">Más salidas</option>
+              <option value="nombre">Nombre</option>
+            </select>
+            <app-icon class="trail" name="chevron-down"></app-icon>
+          </div>
+        </label>
+      </div>
+
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Producto</th>
+              <th>SKU</th>
+              <th>Categoría</th>
+              <th>Ingresos</th>
+              <th>Reposiciones</th>
+              <th>Salidas</th>
+              <th>Unidades</th>
+              <th>% del total</th>
+              <th>Movimientos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of filtradas">
+              <td class="num">{{ posicion(f) }}</td>
+              <td>
+                <div class="prod-cell">
+                  <span class="thumb" [ngClass]="tonoThumb(f.nombre)">{{ iniciales(f.nombre) }}</span>
+                  <span class="prod-name">{{ f.nombre }}</span>
+                </div>
+              </td>
+              <td class="muted">{{ f.sku }}</td>
+              <td>{{ f.categoria || '—' }}</td>
+              <td>{{ f.totalIngresado }}</td>
+              <td>{{ f.totalRepuesto }}</td>
+              <td>{{ f.totalSalida }}</td>
+              <td class="num">{{ total(f) }}</td>
+              <td>{{ pct(total(f)) }}%</td>
+              <td>{{ f.movimientos }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span>Mostrando <b>{{ filtradas.length }}</b> de <b>{{ filas.length }}</b> productos</span>
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="tip-bar">
+    <app-icon name="bulb" [size]="22"></app-icon>
+    <span><b>Tip:</b> Revisa los productos con baja rotación y ajusta el stock para evitar quiebres o sobrestock.</span>
+    <app-wordmark [size]="34" color="var(--brand-blue)"></app-wordmark>
+    <span class="tip-sep"></span>
+    <small>Un mejor control,<br />una mejor tienda.</small>
+  </div>
+</ng-container>

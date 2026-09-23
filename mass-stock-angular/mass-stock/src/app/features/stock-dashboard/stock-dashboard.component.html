@@ -1,0 +1,158 @@
+<div class="page-head">
+  <div>
+    <h1>Stock en tiempo real</h1>
+    <p class="page-sub underline">Visibilidad del inventario de percha, actualizado al instante.</p>
+  </div>
+  <div class="page-actions">
+    <div class="live">
+      <span class="live-state" [class.on]="live"><span class="live-dot"></span>{{ live ? 'Conectado en tiempo real' : 'Conectando…' }}</span>
+      <small *ngIf="ultimaActualizacion">Última actualización: {{ textoActualizacion }}</small>
+    </div>
+    <button class="btn btn-blue" (click)="actualizar()" [disabled]="refrescando">
+      <app-icon name="refresh" [size]="18" [class.spin]="refrescando"></app-icon> Actualizar
+    </button>
+  </div>
+</div>
+
+<div *ngIf="errorMsg" class="msg err"><app-icon name="alert" [size]="16"></app-icon>{{ errorMsg }}</div>
+<div *ngIf="loading" class="empty">Cargando stock…</div>
+
+<ng-container *ngIf="!loading && !errorMsg">
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-icon"><app-icon name="box" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ productos.length }}</div>
+        <div class="kpi-label">Productos en catálogo</div>
+        <button class="kpi-foot blue" (click)="estado = ''; categoria = ''; busqueda.texto.set('')">
+          <app-icon name="eye" [size]="15"></app-icon> Ver todos <app-icon name="arrow-right" [size]="15"></app-icon>
+        </button>
+      </div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-icon"><app-icon name="cart" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ enBuenEstado }}</div>
+        <div class="kpi-label">Stock en buen estado</div>
+        <div class="kpi-foot green"><app-icon name="trend" [size]="15"></app-icon> {{ porcentaje(enBuenEstado) }}% disponibles</div>
+      </div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-icon"><app-icon name="alert" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ bajoMinimo }}</div>
+        <div class="kpi-label">Por debajo del mínimo</div>
+        <button class="kpi-foot red" (click)="estado = 'bajo'; pagina = 1">
+          <app-icon name="trend-down" [size]="15"></app-icon> {{ porcentaje(bajoMinimo) }}% requieren atención
+        </button>
+      </div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-icon"><app-icon name="box" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ sinStock }}</div>
+        <div class="kpi-label">Sin stock (0 unidades)</div>
+        <button *ngIf="puedeReponer" class="kpi-foot ink" (click)="irA.emit('reposicion')">
+          <app-icon name="plus-circle" [size]="15"></app-icon> Registrar reposición <app-icon name="arrow-right" [size]="15"></app-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="filters">
+      <label class="f">
+        <span>Categoría</span>
+        <div class="input-wrap has-trail">
+          <select [(ngModel)]="categoria" (ngModelChange)="pagina = 1">
+            <option value="">Todas</option>
+            <option *ngFor="let c of categorias" [value]="c">{{ c }}</option>
+          </select>
+          <app-icon class="trail" name="chevron-down"></app-icon>
+        </div>
+      </label>
+      <label class="f">
+        <span>Estado</span>
+        <div class="input-wrap has-trail">
+          <select [(ngModel)]="estado" (ngModelChange)="pagina = 1">
+            <option value="">Todos</option>
+            <option value="ok">OK</option>
+            <option value="bajo">Reponer</option>
+          </select>
+          <app-icon class="trail" name="chevron-down"></app-icon>
+        </div>
+      </label>
+      <div class="f grow">
+        <span>&nbsp;</span>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="search"></app-icon>
+          <input type="search" placeholder="Buscar producto o SKU…" [ngModel]="busqueda.texto()" (ngModelChange)="busqueda.texto.set($event); pagina = 1" />
+        </div>
+      </div>
+      <button class="btn btn-outline" (click)="exportarCsv()" [disabled]="filtrados.length === 0">
+        <app-icon name="download" [size]="18"></app-icon> Exportar
+      </button>
+    </div>
+
+    <div *ngIf="productos.length === 0" class="empty-state">
+      <app-icon name="box" [size]="40" [stroke]="1.5"></app-icon>
+      <p class="empty-title">Todavía no hay productos registrados</p>
+      <p class="empty-copy">
+        Ejecuta <code>seed_datos_prueba.sql</code> en Supabase para ver datos de ejemplo,
+        o registra el primer ingreso de mercadería.
+      </p>
+    </div>
+
+    <div *ngIf="productos.length > 0 && filtrados.length === 0" class="empty-state">
+      <app-icon name="search" [size]="36"></app-icon>
+      <p class="empty-title">Sin resultados</p>
+      <p class="empty-copy">Ningún producto coincide con los filtros aplicados.</p>
+    </div>
+
+    <div class="table-scroll" *ngIf="filtrados.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>SKU</th>
+            <th>Categoría</th>
+            <th>Stock</th>
+            <th>Mínimo</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of visibles" [class.row-alert]="p.stockActual === 0">
+            <td>
+              <div class="prod-cell">
+                <span class="thumb" [ngClass]="tonoThumb(p.nombre)">{{ iniciales(p.nombre) }}</span>
+                <span class="prod-name">{{ p.nombre }}</span>
+              </div>
+            </td>
+            <td class="muted">{{ p.sku }}</td>
+            <td>{{ p.categoria || '—' }}</td>
+            <td>
+              <div class="stock-cell">
+                <span class="num">{{ p.stockActual }}</span>
+                <div class="bar-track"><div class="bar-fill" [class.low]="estaBajo(p)" [style.width.%]="barraAncho(p)"></div></div>
+              </div>
+            </td>
+            <td>{{ p.stockMinimo }}</td>
+            <td><span class="badge" [ngClass]="estaBajo(p) ? 'low' : 'ok'">{{ estaBajo(p) ? 'Reponer' : 'OK' }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-foot" *ngIf="filtrados.length > 0">
+      <span>Mostrando <b>{{ visibles.length }}</b> de <b>{{ filtrados.length }}</b> productos</span>
+      <div class="pager">
+        <button (click)="irPagina(pagina - 1)" [disabled]="pagina <= 1" aria-label="Anterior"><app-icon name="chevron-left" [size]="16"></app-icon></button>
+        <button *ngFor="let n of listaPaginas" [class.active]="n === pagina" (click)="irPagina(n)">{{ n }}</button>
+        <button (click)="irPagina(pagina + 1)" [disabled]="pagina >= paginas" aria-label="Siguiente"><app-icon name="chevron-right" [size]="16"></app-icon></button>
+      </div>
+    </div>
+  </div>
+
+  <app-brand-banner></app-brand-banner>
+</ng-container>

@@ -1,0 +1,120 @@
+<div class="page-head">
+  <div class="page-title">
+    <app-icon class="title-arrow" name="arrow-right" [size]="34" [stroke]="2"></app-icon>
+    <div>
+      <h1>Registrar salida</h1>
+      <p class="page-sub">Venta, merma, vencimiento o ajuste de conteo — el stock baja automáticamente.</p>
+    </div>
+  </div>
+  <div class="breadcrumb">Inicio <app-icon name="chevron-right" [size]="14"></app-icon> <b>Registrar salida</b></div>
+</div>
+
+<div class="form-layout">
+  <div class="card form-card">
+    <div class="form-card-head">
+      <div class="fc-icon"><app-icon name="cart" [size]="28"></app-icon></div>
+      <div>
+        <h2>Datos de la salida</h2>
+        <p>Completa la información del movimiento de stock.</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="field">
+        <label for="producto">Producto <span class="req">*</span></label>
+        <div class="input-wrap has-lead has-trail">
+          <app-icon class="lead" name="search" [size]="20"></app-icon>
+          <select id="producto" formControlName="productoId">
+            <option value="" disabled>Selecciona un producto…</option>
+            <option *ngFor="let p of productos" [value]="p.id">{{ p.nombre }} ({{ p.sku }}) — stock: {{ p.stockActual }}</option>
+          </select>
+          <app-icon class="trail" name="chevron-down" [size]="20"></app-icon>
+        </div>
+        <p class="hint" *ngIf="!productoSeleccionado">Busca por nombre o SKU.</p>
+        <p class="hint" *ngIf="productoSeleccionado">Stock disponible: <b>{{ productoSeleccionado.stockActual }}</b> unidades</p>
+      </div>
+
+      <div class="field">
+        <label for="motivo">Motivo <span class="req">*</span></label>
+        <div class="input-wrap has-lead has-trail">
+          <app-icon class="lead" name="tag" [size]="20"></app-icon>
+          <select id="motivo" formControlName="motivo">
+            <option *ngFor="let m of motivos" [value]="m.valor">{{ m.label }}</option>
+          </select>
+          <app-icon class="trail" name="chevron-down" [size]="20"></app-icon>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="cantidad">Cantidad <span class="req">*</span></label>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="hash" [size]="20"></app-icon>
+          <input id="cantidad" type="number" min="1" formControlName="cantidad" placeholder="Ej. 5" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="nota">Detalle (opcional)</label>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="note" [size]="20"></app-icon>
+          <input id="nota" type="text" formControlName="nota" maxlength="100" placeholder="Ej. Caja dañada en almacén, venta mayorista, etc." />
+        </div>
+        <div class="counter">{{ (form.value.nota || '').length }}/100</div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" (click)="cancelar()"><app-icon name="x" [size]="18"></app-icon> Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="enviando">
+          <app-icon name="arrow-right" [size]="18" [stroke]="2.4"></app-icon>
+          {{ enviando ? 'Registrando…' : 'Registrar salida' }}
+        </button>
+      </div>
+
+      <div *ngIf="feedback" class="msg" [class.ok]="feedback.type === 'ok'" [class.err]="feedback.type === 'err'">
+        <app-icon [name]="feedback.type === 'ok' ? 'check-circle' : 'alert'" [size]="16"></app-icon>{{ feedback.text }}
+      </div>
+    </form>
+  </div>
+
+  <div class="side-stack">
+    <div class="info-card">
+      <div class="info-row">
+        <div class="cart-art"><app-icon name="cart" [size]="46" [stroke]="2"></app-icon></div>
+        <div>
+          <h3>Cada salida cuenta</h3>
+          <p>Registra correctamente las salidas de productos para mantener un stock actualizado y evitar quiebres.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card yellow">
+      <h3>Tipos de salida</h3>
+      <div class="type-list">
+        <button type="button" class="type-item pick" *ngFor="let m of motivos" [class.sel]="form.value.motivo === m.valor" (click)="form.patchValue({ motivo: m.valor })">
+          <span class="ti-icon" [ngClass]="m.tono"><app-icon [name]="m.icono" [size]="21"></app-icon></span>
+          <div><b>{{ m.corto }}</b><span>{{ m.descripcion }}</span></div>
+        </button>
+      </div>
+    </div>
+
+    <div class="info-card green">
+      <div class="info-row">
+        <div class="info-bubble green"><app-icon name="check" [size]="28" [stroke]="2.6"></app-icon></div>
+        <div>
+          <h3>El stock se actualiza automáticamente</h3>
+          <p>Una vez registrada la salida, el inventario se verá reflejado en tiempo real.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-row">
+        <div class="info-bubble"><app-icon name="bulb" [size]="26"></app-icon></div>
+        <div>
+          <h3>Tip</h3>
+          <p>Verifica el producto y la cantidad antes de registrar la salida para evitar errores.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

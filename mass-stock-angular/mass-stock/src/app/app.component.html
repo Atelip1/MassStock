@@ -1,0 +1,165 @@
+<app-login *ngIf="!auth.estaAutenticado"></app-login>
+
+<app-toast-container *ngIf="auth.estaAutenticado"></app-toast-container>
+
+<div class="app-shell" *ngIf="auth.estaAutenticado" [class.sidebar-oculta]="sidebarOculta">
+  <!-- ================= Sidebar ================= -->
+  <aside class="sidebar" [class.abierto]="menuMovilAbierto">
+    <div class="sidebar-brand">
+      <img class="brand-logo" src="mass-logo.png" alt="Mass" />
+      <div>
+        <div class="brand-name">Mass Stock</div>
+        <div class="brand-tag">Controla hoy,<br />vende más mañana.</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ng-container *ngFor="let item of navItems">
+        <div class="nav-divider" *ngIf="item.divider"></div>
+        <button class="nav-item" [class.active]="tab === item.tab" (click)="setTab(item.tab)">
+          <app-icon [name]="item.icon" [size]="20"></app-icon>
+          <span>{{ item.label }}</span>
+          <app-icon *ngIf="item.lectura" class="nav-lectura" name="eye" [size]="15" title="Solo lectura"></app-icon>
+          <span class="nav-badge" *ngIf="item.tab === 'alertas' && conteoAlertas > 0">{{ conteoAlertas }}</span>
+        </button>
+      </ng-container>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-promo">
+        <app-icon name="store" [size]="26"></app-icon>
+        <div>
+          <b>Juntos</b> hacemos que llegue más.
+          <span class="promo-line"></span>
+        </div>
+      </div>
+
+      <button class="theme-toggle" (click)="theme.alternar()">
+        <app-icon [name]="theme.oscuro() ? 'sun' : 'moon'" [size]="17"></app-icon>
+        {{ theme.oscuro() ? 'Modo claro' : 'Modo oscuro' }}
+      </button>
+
+      <div class="side-footer">
+        <app-wordmark [size]="30"></app-wordmark>
+        <p>Precios bajos,<br />para siempre.</p>
+      </div>
+    </div>
+  </aside>
+
+  <div class="overlay-movil" *ngIf="menuMovilAbierto" (click)="toggleMenu()"></div>
+
+  <!-- ================= Contenido ================= -->
+  <div class="content">
+    <header class="topbar">
+      <button class="icon-btn menu-toggle" (click)="toggleMenu()" [attr.aria-label]="menuVisible ? 'Ocultar menú' : 'Mostrar menú'" [attr.aria-expanded]="menuVisible">
+        <app-icon name="menu" [size]="22"></app-icon>
+      </button>
+      <img class="topbar-logo" src="mass-logo.png" alt="Mass" />
+
+      <label class="search">
+        <app-icon name="search" [size]="19"></app-icon>
+        <input
+          #buscador
+          type="search"
+          placeholder="Buscar producto, SKU o categoría…"
+          [value]="busqueda.texto()"
+          (input)="busqueda.texto.set(buscador.value)"
+          (keydown.enter)="setTab('stock')"
+        />
+        <kbd>Ctrl + K</kbd>
+      </label>
+
+      <div class="topbar-right">
+        <button class="bell" (click)="irAAlertas()" aria-label="Alertas">
+          <app-icon name="bell" [size]="21"></app-icon>
+          <span class="bell-dot" *ngIf="conteoAlertas > 0"></span>
+        </button>
+
+        <div class="user-chip-wrap">
+          <button class="user-chip" (click)="menuUsuarioAbierto = !menuUsuarioAbierto">
+            <span class="avatar">{{ inicial }}</span>
+            <span class="chip-text">
+              <b>{{ auth.usuario()?.nombre }}</b>
+              <small>Tienda MASS Chincha</small>
+            </span>
+            <app-icon name="chevron-down" [size]="18"></app-icon>
+          </button>
+          <div class="user-menu" *ngIf="menuUsuarioAbierto">
+            <div class="um-head">
+              <b>{{ auth.usuario()?.nombre }}</b>
+              <small>{{ auth.usuario()?.email }} · {{ rolLegible }}</small>
+            </div>
+            <button (click)="abrirPassword()"><app-icon name="lock" [size]="16"></app-icon> Cambiar contraseña</button>
+            <button (click)="theme.alternar()"><app-icon [name]="theme.oscuro() ? 'sun' : 'moon'" [size]="16"></app-icon> {{ theme.oscuro() ? 'Modo claro' : 'Modo oscuro' }}</button>
+            <button class="danger" (click)="logout()"><app-icon name="logout" [size]="16"></app-icon> Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="menu-backdrop" *ngIf="menuUsuarioAbierto" (click)="menuUsuarioAbierto = false"></div>
+
+    <div class="sesion-banner" *ngIf="auth.sesionPorExpirar()">
+      <app-icon name="clock" [size]="16"></app-icon>
+      Tu sesión está por expirar. Guarda lo que estés haciendo y vuelve a iniciar sesión pronto.
+    </div>
+
+    <main class="main">
+      <ng-container [ngSwitch]="tab">
+        <app-inicio *ngSwitchCase="'inicio'" (irA)="setTab($event)"></app-inicio>
+        <app-stock-dashboard *ngSwitchCase="'stock'" (irA)="setTab($event)"></app-stock-dashboard>
+        <app-registrar-ingreso *ngSwitchCase="'ingreso'" (irA)="setTab($event)"></app-registrar-ingreso>
+        <app-registrar-reposicion *ngSwitchCase="'reposicion'" (irA)="setTab($event)"></app-registrar-reposicion>
+        <app-registrar-salida *ngSwitchCase="'salida'" (irA)="setTab($event)"></app-registrar-salida>
+        <app-alertas *ngSwitchCase="'alertas'" (irA)="setTab($event)"></app-alertas>
+        <app-flujo-reposicion *ngSwitchCase="'flujo'" (irA)="setTab($event)"></app-flujo-reposicion>
+        <app-reportes *ngSwitchCase="'reportes'"></app-reportes>
+        <app-historial *ngSwitchCase="'historial'"></app-historial>
+        <app-catalogo *ngSwitchCase="'catalogo'"></app-catalogo>
+        <app-usuarios *ngSwitchCase="'usuarios'"></app-usuarios>
+        <app-indicadores *ngSwitchCase="'indicadores'"></app-indicadores>
+      </ng-container>
+    </main>
+  </div>
+
+  <!-- ================= Modal: cambiar contraseña ================= -->
+  <div class="modal-backdrop" *ngIf="mostrarCambiarPassword" (click)="cerrarPassword()">
+    <div class="modal card" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="pwd-title">
+      <div class="modal-head">
+        <div class="page-title-icon"><app-icon name="lock" [size]="22"></app-icon></div>
+        <div>
+          <h2 id="pwd-title" class="card-title">Cambiar contraseña</h2>
+          <p class="card-sub">Usa al menos 6 caracteres.</p>
+        </div>
+        <button class="icon-btn" (click)="cerrarPassword()" aria-label="Cerrar"><app-icon name="x"></app-icon></button>
+      </div>
+
+      <form [formGroup]="passwordForm" (ngSubmit)="onCambiarPassword()">
+        <div class="field">
+          <label for="pwd-actual">Contraseña actual</label>
+          <div class="input-wrap has-lead">
+            <app-icon class="lead" name="lock"></app-icon>
+            <input id="pwd-actual" type="password" formControlName="passwordActual" autocomplete="current-password" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="pwd-nueva">Nueva contraseña</label>
+          <div class="input-wrap has-lead">
+            <app-icon class="lead" name="shield"></app-icon>
+            <input id="pwd-nueva" type="password" formControlName="passwordNueva" autocomplete="new-password" />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" (click)="cerrarPassword()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="enviandoPassword">
+            {{ enviandoPassword ? 'Guardando…' : 'Guardar' }}
+          </button>
+        </div>
+
+        <div class="msg" *ngIf="passwordFeedback" [class.ok]="passwordFeedback.type === 'ok'" [class.err]="passwordFeedback.type === 'err'">
+          {{ passwordFeedback.text }}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

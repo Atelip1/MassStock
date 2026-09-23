@@ -1,0 +1,13 @@
+.live { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin-right: 10px; }
+.live small { font-size: 12.5px; color: var(--ink-soft); }
+.live-state { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--ink-faint); }
+.live-state.on { color: var(--green); }
+.live-dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+.live-state.on .live-dot { box-shadow: 0 0 0 4px color-mix(in srgb, var(--green) 20%, transparent); animation: pulso 1.8s ease infinite; }
+@keyframes pulso { 50% { box-shadow: 0 0 0 7px transparent; } }
+.spin { animation: girar .8s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+@media (max-width: 640px) {
+  .live { align-items: flex-start; margin: 0; }
+  .page-actions { width: 100%; justify-content: space-between; }
+}

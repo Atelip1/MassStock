@@ -1,0 +1,100 @@
+<div class="page-head">
+  <div class="page-title">
+    <div class="page-title-icon big"><app-icon name="flow" [size]="28"></app-icon></div>
+    <div>
+      <h1>Flujo de reposición</h1>
+      <p class="page-sub">Sigue el estado de cada producto desde la detección hasta la verificación.</p>
+    </div>
+  </div>
+  <button class="btn btn-ghost" (click)="verAyuda = !verAyuda">
+    <app-icon name="help" [size]="18"></app-icon> ¿Cómo se calcula?
+  </button>
+</div>
+
+<div class="card ayuda" *ngIf="verAyuda">
+  <p>Las etapas se calculan solas con el stock actual y las reposiciones registradas; no hay que moverlas a mano.</p>
+  <ul>
+    <li *ngFor="let e of etapas"><b>{{ e.paso }}. {{ e.titulo }}:</b> {{ e.ayuda }}</li>
+  </ul>
+</div>
+
+<div *ngIf="errorMsg" class="msg err"><app-icon name="alert" [size]="16"></app-icon>{{ errorMsg }}</div>
+<div *ngIf="loading" class="empty">Cargando flujo…</div>
+
+<ng-container *ngIf="!loading && !errorMsg">
+  <div class="msg aviso" *ngIf="sinHistorial">
+    <app-icon name="help" [size]="16"></app-icon>
+    Mostrando solo productos detectados y priorizados: para ver las reposiciones en curso, reinicia la API con los permisos nuevos.
+  </div>
+  <div class="card stepper">
+    <ng-container *ngFor="let e of etapas; let last = last">
+      <button class="step" [ngClass]="e.tono" [class.sel]="filtro === e.valor" (click)="filtro = filtro === e.valor ? 'todos' : e.valor" [title]="e.ayuda">
+        <span class="step-icon"><app-icon [name]="e.icono" [size]="26" [stroke]="2.1"></app-icon><i class="step-count">{{ contar(e.valor) }}</i></span>
+        <b>{{ e.paso }}. {{ e.titulo }}</b>
+        <small>{{ e.sub }}</small>
+      </button>
+      <span class="step-line" *ngIf="!last"></span>
+    </ng-container>
+  </div>
+
+  <div class="table-card">
+    <div class="list-head flujo-head">
+      <h2 class="card-title">Productos en proceso de reposición</h2>
+      <div class="chips">
+        <button [class.active]="filtro === 'todos'" (click)="filtro = 'todos'">Todos ({{ filas.length }})</button>
+        <button *ngFor="let e of etapas" [class.active]="filtro === e.valor" (click)="filtro = e.valor">
+          {{ e.titulo }} ({{ contar(e.valor) }})
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="visibles.length === 0" class="empty-state ok">
+      <app-icon name="check-circle" [size]="40" [stroke]="1.6"></app-icon>
+      <p class="empty-title">{{ filas.length === 0 ? 'Nada en proceso' : 'Sin productos en esta etapa' }}</p>
+      <p class="empty-copy">{{ filas.length === 0 ? 'Ningún producto está bajo el mínimo ni fue repuesto en los últimos 7 días.' : 'Elige otra etapa para ver sus productos.' }}</p>
+    </div>
+
+    <div class="table-scroll" *ngIf="visibles.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>SKU</th>
+            <th>Stock actual</th>
+            <th>Mínimo</th>
+            <th>Estado</th>
+            <th>Última reposición</th>
+            <th>Próxima acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of visibles">
+            <td>
+              <div class="prod-cell">
+                <span class="thumb" [ngClass]="tonoThumb(f.producto.nombre)">{{ iniciales(f.producto.nombre) }}</span>
+                <span class="prod-name">{{ f.producto.nombre }}</span>
+              </div>
+            </td>
+            <td class="muted">{{ f.producto.sku }}</td>
+            <td class="num" [class.neg]="f.producto.stockActual <= f.producto.stockMinimo">{{ f.producto.stockActual }}</td>
+            <td>{{ f.producto.stockMinimo }}</td>
+            <td><span class="badge etapa" [ngClass]="info(f.etapa).tono">{{ etiquetaEstado(f.etapa) }}</span></td>
+            <td class="muted">{{ f.ultimaReposicion ? fechaRelativa(f.ultimaReposicion) : '—' }}</td>
+            <td>
+              <ng-container [ngSwitch]="f.etapa">
+                <button *ngSwitchCase="'detectado'" class="btn btn-outline btn-sm" [disabled]="!puedeReponer" (click)="reponer(f)">Generar reposición</button>
+                <button *ngSwitchCase="'priorizado'" class="btn btn-outline btn-sm" [disabled]="!puedeReponer" (click)="reponer(f)">Registrar reposición</button>
+                <button *ngSwitchCase="'pendiente'" class="btn btn-ghost btn-sm" [disabled]="!puedeReponer" (click)="reponer(f)">Completar reposición</button>
+                <ng-container *ngSwitchCase="'repuesto'">
+                  <button *ngIf="puedeVerHistorial" class="btn btn-ghost btn-sm" (click)="verHistorial()">Ver detalle</button>
+                  <span *ngIf="!puedeVerHistorial" class="muted">Esperando verificación</span>
+                </ng-container>
+                <span *ngSwitchDefault class="muted">Sin acción</span>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-container>

@@ -1,0 +1,92 @@
+<div class="page-head">
+  <div>
+    <div class="breadcrumb crumb-top"><app-icon name="box-plus" [size]="16"></app-icon> Registrar ingreso</div>
+    <h1>Registrar ingreso</h1>
+    <p class="page-sub">Ingreso de mercadería de proveedor — el stock se actualiza automáticamente.</p>
+  </div>
+</div>
+
+<div class="form-layout">
+  <div class="card form-card">
+    <div class="form-card-head">
+      <div class="fc-icon"><app-icon name="truck" [size]="28"></app-icon></div>
+      <span class="fc-sep"></span>
+      <div>
+        <h2>Datos del ingreso</h2>
+        <p>Registra la mercadería recibida del proveedor.</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="field">
+        <label for="producto">Producto <span class="req">*</span></label>
+        <div class="input-wrap has-lead has-trail">
+          <app-icon class="lead" name="search" [size]="20"></app-icon>
+          <select id="producto" formControlName="productoId">
+            <option value="" disabled>Selecciona un producto…</option>
+            <option *ngFor="let p of productos" [value]="p.id">{{ p.nombre }} ({{ p.sku }})</option>
+          </select>
+          <app-icon class="trail" name="chevron-down" [size]="20"></app-icon>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="cantidad">Cantidad recibida <span class="req">*</span></label>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="hash" [size]="20"></app-icon>
+          <input id="cantidad" type="number" min="1" formControlName="cantidad" placeholder="Ej. 24" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="guia">Guía de remisión</label>
+          <div class="input-wrap has-lead">
+            <app-icon class="lead" name="file" [size]="20"></app-icon>
+            <input id="guia" type="text" formControlName="guiaRemision" placeholder="Ej. T001-000123" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="usuario">Registrado por</label>
+          <div class="input-wrap has-lead">
+            <app-icon class="lead" name="user" [size]="20"></app-icon>
+            <input id="usuario" type="text" formControlName="usuario" placeholder="Nombre del colaborador" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" (click)="cancelar()"><app-icon name="x" [size]="18"></app-icon> Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="enviando">
+          <app-icon name="plus" [size]="18" [stroke]="2.4"></app-icon>
+          {{ enviando ? 'Registrando…' : 'Registrar ingreso' }}
+        </button>
+      </div>
+
+      <div *ngIf="feedback" class="msg" [class.ok]="feedback.type === 'ok'" [class.err]="feedback.type === 'err'">
+        <app-icon [name]="feedback.type === 'ok' ? 'check-circle' : 'alert'" [size]="16"></app-icon>{{ feedback.text }}
+      </div>
+    </form>
+  </div>
+
+  <div class="card side-hero">
+    <div class="hero-box">
+      <app-icon class="spark" name="truck" [size]="34"></app-icon>
+      <div class="crate"><app-wordmark [size]="30" color="var(--on-yellow)"></app-wordmark></div>
+    </div>
+    <h3 class="side-title">Mercadería que llega, stock que se actualiza</h3>
+    <p class="side-copy">Cada ingreso de proveedor suma al inventario de la tienda y queda registrado en el historial con su guía de remisión.</p>
+
+    <div class="type-list">
+      <div class="type-item"><span class="ti-icon green solid"><app-icon name="check" [size]="22" [stroke]="2.6"></app-icon></span><div><b>Stock al día</b><span>Se suma al instante.</span></div></div>
+      <div class="type-item"><span class="ti-icon blue solid"><app-icon name="file" [size]="20"></app-icon></span><div><b>Trazabilidad</b><span>Guarda la guía de remisión.</span></div></div>
+      <div class="type-item"><span class="ti-icon yellow"><app-icon name="clock" [size]="20"></app-icon></span><div><b>Auditoría</b><span>Visible en el historial.</span></div></div>
+    </div>
+
+    <div class="quote-box">
+      <span class="q-mark">“</span>
+      <span>Un mejor control,<br />una mejor tienda.</span>
+      <app-wordmark [size]="34"></app-wordmark>
+    </div>
+  </div>
+</div>

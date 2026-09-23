@@ -1,0 +1,51 @@
+.wave { display: inline-block; }
+.date-chip { gap: 12px; padding-top: 6px; }
+.date-chip span { display: flex; flex-direction: column; }
+.date-chip b { color: var(--ink); font-weight: 500; font-size: 14.5px; }
+.date-chip small { color: var(--blue); font-size: 13px; margin-top: 2px; }
+.status-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--green); margin-right: 7px; }
+
+.mb-16 { margin-bottom: 16px; }
+.mt-12 { margin-top: 14px; }
+.card-title.with-icon { display: flex; align-items: center; gap: 9px; }
+.card-title.with-icon app-icon { color: var(--amber); }
+
+/* Reponedor */
+.rep-grid { display: grid; grid-template-columns: 1fr 1fr 1.25fr; gap: 18px; margin-bottom: 26px; }
+.kpi-icon.soft-blue { background: var(--blue-soft); box-shadow: none; }
+.kpi-icon.soft-red { background: var(--red-soft); color: var(--red); box-shadow: none; }
+.kpi.plain .kpi-icon { width: 64px; height: 64px; border-radius: 50%; }
+.promo-card {
+  position: relative; overflow: hidden; border-radius: var(--radius); padding: 22px 24px;
+  background: linear-gradient(115deg, var(--brand-yellow) 0 52%, #E7B800 52% 100%); color: var(--on-yellow);
+}
+.promo-card p { font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 1.2; margin: 12px 0 0; max-width: 60%; }
+.promo-quote {
+  position: absolute; right: 20px; top: 22px; text-align: right; font-weight: 700; font-size: 15px; line-height: 1.3;
+}
+.promo-quote::after { content: ''; display: block; width: 36px; height: 3px; background: currentColor; margin: 10px 0 0 auto; border-radius: 3px; }
+
+.rep-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 22px; }
+.tip-card { display: flex; gap: 14px; align-items: flex-start; }
+.tip-card > app-icon:first-child { color: var(--blue); }
+.tip-card h3, .reminder h3 { font-size: 16px; font-weight: 700; margin: 0 0 6px; }
+.tip-card p, .reminder p { margin: 0; font-size: 13.5px; color: var(--ink-soft); line-height: 1.55; }
+.tip-cart { color: var(--amber); margin-left: auto; align-self: center; }
+.reminder {
+  display: flex; gap: 18px; align-items: center; margin-top: 16px; padding: 22px; border-radius: 14px;
+  background: var(--blue-soft);
+}
+.clipboard {
+  width: 72px; height: 84px; border-radius: 12px; flex-shrink: 0; display: grid; place-items: center;
+  background: var(--brand-yellow); color: var(--on-yellow);
+}
+
+@media (max-width: 1100px) {
+  .rep-grid { grid-template-columns: 1fr 1fr; }
+  .promo-card { grid-column: 1 / -1; }
+  .rep-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .rep-grid { grid-template-columns: 1fr; }
+  .date-chip { display: none; }
+}

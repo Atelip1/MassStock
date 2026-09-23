@@ -1,0 +1,104 @@
+<div class="page-head">
+  <div class="page-title">
+    <div class="page-title-icon big"><app-icon name="users" [size]="28"></app-icon></div>
+    <div>
+      <h1>Gestión de usuarios</h1>
+      <p class="page-sub">Crea cuentas y asigna el rol correcto a cada persona del equipo.</p>
+    </div>
+  </div>
+</div>
+
+<div class="admin-layout">
+  <div class="card form-card">
+    <div class="form-card-head">
+      <div class="fc-icon"><app-icon [name]="editandoId ? 'edit' : 'user'" [size]="26"></app-icon></div>
+      <div>
+        <h2>{{ editandoId ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+        <p>{{ editandoId ? 'Actualiza el rol o el acceso.' : 'Crea una cuenta para tu equipo.' }}</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="field">
+        <label for="nombre">Nombre completo <span class="req">*</span></label>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="user" [size]="19"></app-icon>
+          <input id="nombre" type="text" formControlName="nombre" placeholder="Ej. Ana Torres" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">Correo <span class="req">*</span></label>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="mail" [size]="19"></app-icon>
+          <input id="email" type="email" formControlName="email" placeholder="correo@mass.pe" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="rol">Rol</label>
+        <div class="input-wrap has-lead has-trail">
+          <app-icon class="lead" name="shield" [size]="19"></app-icon>
+          <select id="rol" formControlName="rol">
+            <option *ngFor="let r of roles" [value]="r.valor">{{ r.label }}</option>
+          </select>
+          <app-icon class="trail" name="chevron-down" [size]="19"></app-icon>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="password">{{ editandoId ? 'Nueva contraseña (opcional)' : 'Contraseña inicial' }}</label>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="lock" [size]="19"></app-icon>
+          <input id="password" type="password" formControlName="password" placeholder="Mínimo 6 caracteres" />
+        </div>
+      </div>
+
+      <label class="checkbox">
+        <input type="checkbox" formControlName="activo" />
+        Usuario activo (puede iniciar sesión)
+      </label>
+
+      <div class="form-actions mt-20" [class.single]="!editandoId">
+        <button *ngIf="editandoId" type="button" class="btn btn-ghost" (click)="cancelarEdicion()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="enviando">
+          <app-icon [name]="editandoId ? 'check' : 'plus'" [size]="18" [stroke]="2.4"></app-icon>
+          {{ enviando ? 'Guardando…' : (editandoId ? 'Guardar cambios' : 'Crear usuario') }}
+        </button>
+      </div>
+
+      <div *ngIf="feedback" class="msg" [class.ok]="feedback.type === 'ok'" [class.err]="feedback.type === 'err'">
+        <app-icon [name]="feedback.type === 'ok' ? 'check-circle' : 'alert'" [size]="16"></app-icon>{{ feedback.text }}
+      </div>
+    </form>
+  </div>
+
+  <div class="table-card">
+    <div class="list-head">
+      <h2 class="card-title">Usuarios</h2>
+      <span class="badge">{{ usuarios.length }}</span>
+    </div>
+    <div *ngIf="loading" class="empty">Cargando…</div>
+    <div class="table-scroll" *ngIf="!loading">
+      <table class="data-table">
+        <thead>
+          <tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of usuarios" [class.editing]="editandoId === u.id">
+            <td>
+              <div class="prod-cell">
+                <span class="avatar sm">{{ u.nombre.charAt(0).toUpperCase() }}</span>
+                <span class="prod-name">{{ u.nombre }}</span>
+              </div>
+            </td>
+            <td class="muted">{{ u.email }}</td>
+            <td><span class="badge" [ngClass]="u.rol === 'administrador' ? 'purple' : u.rol === 'encargado' ? '' : 'yellow'">{{ rolLegible(u.rol) }}</span></td>
+            <td><span class="badge" [ngClass]="u.activo ? 'green' : 'gray'">{{ u.activo ? 'Activo' : 'Inactivo' }}</span></td>
+            <td><button class="btn btn-ghost btn-sm" (click)="editar(u)"><app-icon name="edit" [size]="15"></app-icon> Editar</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,178 @@
+<div class="page-head">
+  <div class="page-title">
+    <div class="page-title-icon red big"><app-icon name="alert" [size]="30"></app-icon></div>
+    <div>
+      <h1>Alertas de quiebre</h1>
+      <p class="page-sub">Productos por debajo del stock mínimo, ordenados por urgencia.</p>
+    </div>
+  </div>
+  <div class="page-meta">
+    <app-icon name="calendar" [size]="18"></app-icon> {{ fecha }} <span class="meta-sep"></span> {{ hora }}
+  </div>
+</div>
+
+<div *ngIf="errorMsg" class="msg err"><app-icon name="alert" [size]="16"></app-icon>{{ errorMsg }}</div>
+<div *ngIf="loading" class="empty">Cargando alertas…</div>
+
+<ng-container *ngIf="!loading && !errorMsg">
+  <div class="kpi-grid">
+    <div class="kpi red">
+      <div class="kpi-icon"><app-icon name="alert" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ alertas.length }}</div>
+        <div class="kpi-label">Productos con alerta</div>
+        <button class="kpi-foot red" (click)="estado = ''">Ver todos <app-icon name="arrow-right" [size]="15"></app-icon></button>
+      </div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-icon"><app-icon name="box" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ criticos }}</div>
+        <div class="kpi-label">Stock crítico (0 unidades)</div>
+        <button class="kpi-foot ink" (click)="estado = 'critico'">Ver críticos <app-icon name="arrow-right" [size]="15"></app-icon></button>
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon"><app-icon name="bell" [size]="26"></app-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ totalFaltante }}</div>
+        <div class="kpi-label">Unidades por reponer</div>
+        <button class="kpi-foot blue" (click)="generarReposicion()">{{ puedeReponer ? 'Generar reposición' : 'Ver stock' }} <app-icon name="arrow-right" [size]="15"></app-icon></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="filters">
+      <div class="f grow">
+        <span>&nbsp;</span>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="search"></app-icon>
+          <input type="search" placeholder="Buscar producto o SKU…" [(ngModel)]="texto" />
+        </div>
+      </div>
+      <label class="f">
+        <span>Categoría</span>
+        <div class="input-wrap has-trail">
+          <select [(ngModel)]="categoria">
+            <option value="">Todas</option>
+            <option *ngFor="let c of categorias" [value]="c">{{ c }}</option>
+          </select>
+          <app-icon class="trail" name="chevron-down"></app-icon>
+        </div>
+      </label>
+      <label class="f">
+        <span>Ordenar por</span>
+        <div class="input-wrap has-trail">
+          <select [(ngModel)]="orden">
+            <option value="urgencia">Más urgente</option>
+            <option value="faltante">Mayor faltante</option>
+            <option value="nombre">Nombre</option>
+          </select>
+          <app-icon class="trail" name="chevron-down"></app-icon>
+        </div>
+      </label>
+      <label class="f">
+        <span>Estado</span>
+        <div class="input-wrap has-trail">
+          <select [(ngModel)]="estado">
+            <option value="">Todos</option>
+            <option value="critico">Sin stock</option>
+            <option value="alerta">Bajo el mínimo</option>
+          </select>
+          <app-icon class="trail" name="chevron-down"></app-icon>
+        </div>
+      </label>
+      <button class="btn btn-outline" (click)="exportarCsv()" [disabled]="filtradas.length === 0">
+        <app-icon name="download" [size]="18"></app-icon> Exportar
+      </button>
+    </div>
+
+    <div *ngIf="alertas.length === 0" class="empty-state ok">
+      <app-icon name="check-circle" [size]="42" [stroke]="1.6"></app-icon>
+      <p class="empty-title">Todo en orden</p>
+      <p class="empty-copy">Ningún producto está por debajo de su stock mínimo ahora mismo.</p>
+    </div>
+    <div *ngIf="alertas.length > 0 && filtradas.length === 0" class="empty-state">
+      <app-icon name="search" [size]="36"></app-icon>
+      <p class="empty-title">Sin resultados</p>
+      <p class="empty-copy">Ninguna alerta coincide con los filtros aplicados.</p>
+    </div>
+
+    <div class="table-scroll" *ngIf="filtradas.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>SKU</th>
+            <th>Categoría</th>
+            <th>Stock actual</th>
+            <th>Mínimo</th>
+            <th>Diferencia</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of filtradas" class="row-alert">
+            <td>
+              <div class="prod-cell">
+                <span class="thumb" [ngClass]="tonoThumb(a.nombre)">{{ iniciales(a.nombre) }}</span>
+                <span class="prod-name">{{ a.nombre }}</span>
+              </div>
+            </td>
+            <td class="muted">{{ a.sku }}</td>
+            <td>{{ a.categoria || 'Sin categoría' }}</td>
+            <td>
+              <div class="stock-cell">
+                <span class="num">{{ a.stockActual }}</span>
+                <div class="bar-track"><div class="bar-fill low" [style.width.%]="barraAncho(a)"></div></div>
+              </div>
+            </td>
+            <td>{{ a.stockMinimo }}</td>
+            <td class="neg">-{{ a.faltante }}</td>
+            <td><span class="badge low">{{ severidad(a) === 'critico' ? 'Sin stock' : ('Faltan ' + a.faltante) }}</span></td>
+            <td>
+              <button class="btn btn-ghost btn-sm" (click)="generarReposicion(a)">
+                <app-icon [name]="puedeReponer ? 'cart' : 'eye'" [size]="16"></app-icon> {{ puedeReponer ? 'Generar reposición' : 'Ver en stock' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-foot" *ngIf="filtradas.length > 0">
+      <span>Mostrando <b>{{ filtradas.length }}</b> de <b>{{ alertas.length }}</b> productos</span>
+    </div>
+  </div>
+
+  <div class="grid-3 mt-20">
+    <div class="card info-tile">
+      <span class="it-icon yellow"><app-icon name="bulb" [size]="22"></app-icon></span>
+      <div>
+        <h3>¿Qué son las alertas de quiebre?</h3>
+        <p>Te mostramos los productos que están por debajo del stock mínimo para que puedas reponerlos a tiempo y evitar quiebres.</p>
+      </div>
+    </div>
+    <div class="card info-tile">
+      <span class="it-icon"><app-icon name="chart" [size]="22"></app-icon></span>
+      <div>
+        <h3>Recomendación</h3>
+        <p>Genera una reposición o verifica el stock en tiempo real para asegurar la disponibilidad de los productos.</p>
+      </div>
+    </div>
+    <div class="card info-tile">
+      <span class="it-icon"><app-icon name="settings" [size]="22"></app-icon></span>
+      <div class="grow">
+        <h3>Acciones rápidas</h3>
+        <button class="btn btn-primary btn-block" (click)="generarReposicion()">
+          <app-icon name="cart" [size]="18"></app-icon> {{ puedeReponer ? 'Generar reposición general' : 'Ver stock en tiempo real' }}
+        </button>
+        <button class="btn btn-ghost btn-block mt-10" (click)="exportarCsv()" [disabled]="alertas.length === 0">
+          <app-icon name="file" [size]="18"></app-icon> Descargar reporte de alertas
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

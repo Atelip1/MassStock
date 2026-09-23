@@ -1,0 +1,45 @@
+.ayuda { margin-bottom: 18px; font-size: 13.5px; color: var(--ink-soft); line-height: 1.6; }
+.ayuda p { margin: 0 0 8px; color: var(--ink); }
+.ayuda ul { margin: 0; padding-left: 18px; }
+
+/* Stepper de 5 etapas */
+.stepper { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 20px; padding: 24px 20px; overflow-x: auto; }
+.step {
+  flex: 0 0 auto; width: 130px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: none; border: 1px solid transparent; border-radius: 14px; padding: 8px 4px; cursor: pointer; color: var(--ink);
+}
+.step:hover { background: var(--hover-tint); }
+.step.sel { border-color: var(--line-strong); background: var(--panel-2); }
+.step b { font-size: 14px; margin-top: 8px; }
+.step small { font-size: 12.5px; color: var(--ink-soft); }
+.step-icon {
+  position: relative; width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--red-soft); color: var(--red);
+}
+.step.yellow .step-icon { background: var(--amber-soft); color: var(--amber); }
+.step.orange .step-icon { background: #FFEBDD; color: #E86A10; }
+.step.blue .step-icon { background: var(--blue-soft); color: var(--blue); }
+.step.green .step-icon { background: var(--green-soft); color: var(--green); }
+:root.dark .step.orange .step-icon { background: #3F2718; color: #FF9A52; }
+.step-count {
+  position: absolute; top: -4px; right: -6px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 100px;
+  background: var(--ink); color: var(--panel); font-size: 11.5px; font-weight: 700; font-style: normal;
+  display: grid; place-items: center;
+}
+.step-line { flex: 1 1 30px; min-width: 24px; height: 0; border-top: 2px dashed var(--line-strong); margin-top: 39px; }
+
+/* Cabecera de la tabla con chips de etapa */
+.flujo-head { flex-wrap: wrap; gap: 14px; }
+.flujo-head .card-title { margin-right: auto; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chips button {
+  padding: 7px 14px; border-radius: 100px; border: 1px solid var(--line-strong); background: var(--panel);
+  color: var(--ink); font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.chips button:hover { background: var(--hover-tint); }
+.chips button.active { background: var(--brand-blue); border-color: var(--brand-blue); color: #fff; }
+
+.badge.etapa.orange { background: #FFEBDD; color: #C4560A; }
+:root.dark .badge.etapa.orange { background: #3F2718; color: #FF9A52; }
+.badge.etapa.blue { background: var(--blue-soft); color: var(--blue); }
+.msg.aviso { background: var(--amber-soft); color: var(--amber); }

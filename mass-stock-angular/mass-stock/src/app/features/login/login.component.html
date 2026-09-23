@@ -1,0 +1,82 @@
+<div class="login-page">
+  <div class="login-frame">
+    <!-- Panel de marca -->
+    <section class="login-hero">
+      <div class="hero-top">
+        <app-wordmark [size]="46"></app-wordmark>
+        <p class="hero-tag">Precios bajos,<br />para siempre.</p>
+      </div>
+
+      <div class="hero-store" aria-hidden="true">
+        <div class="store-sign"><app-wordmark [size]="34" color="var(--on-yellow)"></app-wordmark></div>
+        <div class="store-front">
+          <div class="store-window"><span>¡Hola!<br />Qué bueno<br />verte :)</span></div>
+          <div class="store-door"></div>
+          <div class="store-window shelves"></div>
+        </div>
+      </div>
+
+      <div class="hero-copy">
+        <h1>Juntos<br />hacemos<br />que <em>siempre<br />llegue más</em></h1>
+        <p>Control de stock, reposición y movimiento de productos en un solo lugar.</p>
+      </div>
+
+      <ul class="hero-features">
+        <li><app-icon name="box" [size]="30" [stroke]="1.7"></app-icon><span>Gestión<br />de inventario</span></li>
+        <li><app-icon name="bars" [size]="30" [stroke]="1.7"></app-icon><span>Información<br />en tiempo real</span></li>
+        <li><app-icon name="users" [size]="30" [stroke]="1.7"></app-icon><span>Equipos<br />más eficientes</span></li>
+      </ul>
+
+      <p class="hero-foot">CERCA DE TI, SIEMPRE.</p>
+    </section>
+
+    <!-- Formulario -->
+    <section class="login-form-side">
+      <button type="button" class="lang" (click)="theme.alternar()" [attr.aria-label]="theme.oscuro() ? 'Modo claro' : 'Modo oscuro'">
+        <app-icon [name]="theme.oscuro() ? 'sun' : 'moon'" [size]="17"></app-icon>
+        {{ theme.oscuro() ? 'Claro' : 'Oscuro' }}
+      </button>
+
+      <div class="login-form-inner">
+        <img class="login-logo" src="mass-logo.png" alt="Mass" />
+        <h2>Bienvenido</h2>
+        <p class="login-copy">Inicia sesión para ver el stock y registrar movimientos.</p>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+          <div class="field">
+            <label for="email">Correo corporativo</label>
+            <div class="input-wrap has-lead">
+              <app-icon class="lead" name="mail" [size]="20"></app-icon>
+              <input id="email" type="email" formControlName="email" placeholder="tucorreo@mass.pe" autocomplete="username" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="password">Contraseña</label>
+            <div class="input-wrap has-lead has-trail">
+              <app-icon class="lead" name="lock" [size]="20"></app-icon>
+              <input id="password" [type]="verPassword ? 'text' : 'password'" formControlName="password" placeholder="••••••••" autocomplete="current-password" />
+              <button type="button" class="trail-btn" (click)="verPassword = !verPassword" [attr.aria-label]="verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                <app-icon [name]="verPassword ? 'eye-off' : 'eye'" [size]="20"></app-icon>
+              </button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-block login-submit" type="submit" [disabled]="enviando">
+            {{ enviando ? 'Ingresando…' : 'Ingresar' }}
+            <app-icon *ngIf="!enviando" name="arrow-right" [size]="20"></app-icon>
+          </button>
+
+          <div *ngIf="error" class="msg err"><app-icon name="alert" [size]="16"></app-icon>{{ error }}</div>
+        </form>
+
+        <div class="demo-hint">
+          <p>Usuarios demo (clave para los 3: <code>Mass123!</code>)</p>
+          <div class="demo-users">
+            <button type="button" *ngFor="let u of usuariosDemo" (click)="usarDemo(u)">{{ u }}</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

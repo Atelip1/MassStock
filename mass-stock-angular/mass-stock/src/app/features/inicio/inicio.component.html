@@ -1,0 +1,213 @@
+<div class="page-head">
+  <div>
+    <h1>{{ saludo }}, {{ nombreCorto }} <span class="wave">👋</span></h1>
+    <p class="page-sub">Esto es lo que está pasando en la tienda ahora mismo.</p>
+  </div>
+  <div class="page-meta date-chip">
+    <app-icon name="calendar" [size]="18"></app-icon>
+    <span><b>{{ fecha }}</b><small>Chincha, Ica</small></span>
+  </div>
+</div>
+
+<div *ngIf="loading" class="empty">Cargando resumen…</div>
+
+<ng-container *ngIf="!loading">
+  <!-- ===================== Encargado / Administrador ===================== -->
+  <ng-container *ngIf="puedeVerTendencia">
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-icon"><app-icon name="box" [size]="26"></app-icon></div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ totalProductos }}</div>
+          <div class="kpi-label">productos en catálogo</div>
+          <button class="kpi-foot blue" (click)="irA.emit('stock')">Ver productos <app-icon name="arrow-right" [size]="15"></app-icon></button>
+        </div>
+      </div>
+      <div class="kpi red">
+        <div class="kpi-icon"><app-icon name="alert" [size]="26"></app-icon></div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ totalAlertas }}</div>
+          <div class="kpi-label">alertas de quiebre</div>
+          <button class="kpi-foot red" (click)="irA.emit('alertas')">Ver alertas <app-icon name="arrow-right" [size]="15"></app-icon></button>
+        </div>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-icon"><app-icon name="refresh" [size]="26"></app-icon></div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ movimientosHoy }}</div>
+          <div class="kpi-label">movimientos hoy</div>
+          <button class="kpi-foot green" (click)="irA.emit('historial')">Ver historial <app-icon name="arrow-right" [size]="15"></app-icon></button>
+        </div>
+      </div>
+      <div class="kpi yellow">
+        <div class="kpi-icon"><app-icon [name]="esAdmin ? 'users' : 'store'" [size]="26"></app-icon></div>
+        <div class="kpi-body" *ngIf="esAdmin">
+          <div class="kpi-value">{{ usuariosActivos }}</div>
+          <div class="kpi-label">usuarios activos</div>
+          <button class="kpi-foot ink" (click)="irA.emit('usuarios')">Gestionar <app-icon name="arrow-right" [size]="15"></app-icon></button>
+        </div>
+        <div class="kpi-body" *ngIf="!esAdmin">
+          <div class="kpi-value sm">Tienda MASS Chincha</div>
+          <div class="kpi-label"><span class="status-dot"></span>Operativa</div>
+          <button class="kpi-foot ink" (click)="irA.emit('reportes')">Ver reportes <app-icon name="arrow-right" [size]="15"></app-icon></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2 class="card-title">Actividad de los últimos 7 días</h2>
+            <p class="card-sub">Unidades movidas entre ingresos y reposiciones, por día.</p>
+          </div>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-dot navy"></span>Ingresos</span>
+            <span class="legend-item"><span class="legend-dot yellow"></span>Reposiciones</span>
+          </div>
+        </div>
+        <app-bar-chart [etiquetas]="etiquetasChart" [series]="seriesChart" [alto]="240"></app-bar-chart>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Alertas recientes</h2>
+          <button class="card-link" (click)="irA.emit('alertas')">Ver todas <app-icon name="arrow-right" [size]="15"></app-icon></button>
+        </div>
+        <div class="feed" *ngIf="actividad.length > 0">
+          <div class="feed-item" *ngFor="let a of actividad" [class.red]="a.tono === 'red'" [class.green]="a.tono === 'green'">
+            <span class="feed-dot" [ngClass]="a.tono === 'red' ? 'outline-red' : a.tono"><app-icon [name]="a.icono" [size]="a.tono === 'red' ? 24 : 17" [stroke]="2.2"></app-icon></span>
+            <div class="feed-body">
+              <div class="feed-title">{{ a.titulo }}</div>
+              <div class="feed-sub">{{ a.detalle }}</div>
+            </div>
+            <span class="feed-time">{{ a.cuando }}</span>
+          </div>
+        </div>
+        <div class="empty-state ok" *ngIf="actividad.length === 0">
+          <app-icon name="check-circle" [size]="36"></app-icon>
+          <p class="empty-title">Todo en orden</p>
+          <p class="empty-copy">Sin alertas ni movimientos recientes.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-20">
+      <h2 class="card-title">Acciones rápidas</h2>
+      <p class="card-sub mb-20">Realiza tus tareas más comunes en un clic.</p>
+      <div class="quick-grid">
+        <button class="quick" (click)="irA.emit('salida')">
+          <span class="quick-icon"><app-icon name="plus" [size]="22" [stroke]="2.4"></app-icon></span>
+          <span class="quick-body"><span class="quick-title">Registrar salida</span><span class="quick-sub">Registra productos vendidos</span></span>
+          <app-icon name="chevron-right" [size]="20"></app-icon>
+        </button>
+        <button class="quick yellow" (click)="irA.emit('flujo')">
+          <span class="quick-icon"><app-icon name="flow" [size]="22"></app-icon></span>
+          <span class="quick-body">
+            <span class="quick-title">Flujo de reposición</span>
+            <span class="quick-sub">Del quiebre a la percha llena</span>
+          </span>
+          <app-icon name="chevron-right" [size]="20"></app-icon>
+        </button>
+        <button class="quick purple" (click)="irA.emit('indicadores')">
+          <span class="quick-icon"><app-icon name="gauge" [size]="22"></app-icon></span>
+          <span class="quick-body"><span class="quick-title">Indicadores de mejora</span><span class="quick-sub">Antes vs. después de MassStock</span></span>
+          <app-icon name="chevron-right" [size]="20"></app-icon>
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ===================== Reponedor ===================== -->
+  <ng-container *ngIf="esReponedor">
+    <div class="rep-grid">
+      <div class="kpi plain">
+        <div class="kpi-icon soft-blue"><app-icon name="box" [size]="26"></app-icon></div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ totalProductos }}</div>
+          <div class="kpi-label">productos en catálogo</div>
+          <button class="btn btn-ghost btn-sm mt-12" (click)="irA.emit('stock')">Ver productos <app-icon name="arrow-right" [size]="15"></app-icon></button>
+        </div>
+      </div>
+      <div class="kpi plain">
+        <div class="kpi-icon soft-red"><app-icon name="cart" [size]="26"></app-icon></div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ totalAlertas }}</div>
+          <div class="kpi-label">productos por reponer</div>
+          <button class="btn btn-ghost btn-sm mt-12" (click)="irA.emit('reposicion')">Ver pendientes <app-icon name="arrow-right" [size]="15"></app-icon></button>
+        </div>
+      </div>
+      <div class="promo-card">
+        <app-wordmark [size]="40" color="var(--brand-navy-dark)"></app-wordmark>
+        <p>Productos siempre disponibles para tus clientes.</p>
+        <span class="promo-quote">Precios bajos,<br />para siempre.</span>
+      </div>
+    </div>
+
+    <div class="rep-layout">
+      <div class="stack">
+        <div>
+          <h2 class="card-title">Acciones rápidas</h2>
+          <p class="card-sub mb-16">Realiza tus tareas más comunes en un clic.</p>
+          <div class="quick-grid">
+            <button class="quick solid-yellow" (click)="irA.emit('reposicion')">
+              <span class="quick-icon"><app-icon name="plus" [size]="22" [stroke]="2.4"></app-icon></span>
+              <span class="quick-body"><span class="quick-title">Registrar reposición</span><span class="quick-sub">Actualiza el stock en tienda</span></span>
+              <app-icon name="chevron-right" [size]="22"></app-icon>
+            </button>
+            <button class="quick solid-navy" (click)="irA.emit('stock')">
+              <span class="quick-icon"><app-icon name="list" [size]="22"></app-icon></span>
+              <span class="quick-body"><span class="quick-title">Ver stock en tiempo real</span><span class="quick-sub">Revisa productos y cantidades</span></span>
+              <app-icon name="chevron-right" [size]="22"></app-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title with-icon"><app-icon name="alert" [size]="20"></app-icon> Productos por reponer</h2>
+            <button class="card-link" (click)="irA.emit('stock')">Ver todo <app-icon name="arrow-right" [size]="15"></app-icon></button>
+          </div>
+          <div class="feed" *ngIf="alertas.length > 0">
+            <div class="feed-item" *ngFor="let a of alertas.slice(0, 5)">
+              <span class="feed-dot red"><app-icon name="arrow-down" [size]="17" [stroke]="2.4"></app-icon></span>
+              <div class="feed-body">
+                <div class="feed-title">{{ a.stockActual === 0 ? 'Sin stock' : 'Stock bajo' }}</div>
+                <div class="feed-sub">{{ a.nombre }}</div>
+              </div>
+              <span class="feed-time">{{ a.stockActual }} / mín. {{ a.stockMinimo }}</span>
+            </div>
+          </div>
+          <div class="empty-state ok" *ngIf="alertas.length === 0">
+            <app-icon name="check-circle" [size]="36"></app-icon>
+            <p class="empty-title">Todo en orden</p>
+            <p class="empty-copy">Ningún producto necesita reposición ahora mismo.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card tip-card">
+          <app-icon name="store" [size]="28"></app-icon>
+          <div>
+            <h3>Tu trabajo hace la diferencia</h3>
+            <p>Un stock ordenado permite una mejor experiencia para nuestros clientes.</p>
+          </div>
+          <app-icon class="tip-cart" name="cart" [size]="42"></app-icon>
+        </div>
+        <div class="card">
+          <h2 class="card-title with-icon"><app-icon name="bulb" [size]="20"></app-icon> Recordatorio</h2>
+          <div class="reminder">
+            <div class="clipboard"><app-icon name="list-check" [size]="44" [stroke]="1.8"></app-icon></div>
+            <div>
+              <h3>Mantén el stock actualizado</h3>
+              <p>Evita quiebres y asegura que los productos estén siempre disponibles.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <app-brand-banner linea1="Precios bajos," linea2="para siempre."></app-brand-banner>
+</ng-container>

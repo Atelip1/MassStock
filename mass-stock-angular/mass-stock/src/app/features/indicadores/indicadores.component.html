@@ -1,0 +1,91 @@
+<div class="page-head">
+  <div class="page-title">
+    <div class="page-title-icon big"><app-icon name="gauge" [size]="28"></app-icon></div>
+    <div>
+      <h1>Indicadores de mejora</h1>
+      <p class="page-sub">Comparativo del proceso antes y después de implementar MassStock.</p>
+    </div>
+  </div>
+  <div class="page-actions">
+    <div class="segmented">
+      <button *ngFor="let r of rangos" [class.active]="dias === r.valor" (click)="cambiarRango(r.valor)">{{ r.label }}</button>
+    </div>
+    <span class="page-meta rango"><app-icon name="calendar" [size]="17"></app-icon> {{ rangoTexto }}</span>
+  </div>
+</div>
+
+<div *ngIf="errorMsg" class="msg err"><app-icon name="alert" [size]="16"></app-icon>{{ errorMsg }}</div>
+<div *ngIf="loading" class="empty">Calculando indicadores…</div>
+
+<ng-container *ngIf="!loading && !errorMsg">
+  <div class="ind-grid">
+    <div class="card ind" *ngFor="let i of indicadores">
+      <div class="ind-head">
+        <span class="ind-icon" [ngClass]="i.tono"><app-icon [name]="i.icono" [size]="24"></app-icon></span>
+        <b>{{ i.titulo }}</b>
+      </div>
+      <div class="ind-vals">
+        <div><span class="v">{{ i.antes }}</span><small>Antes</small></div>
+        <div><span class="v strong">{{ i.despues }}</span><small>Después</small></div>
+      </div>
+      <div class="ind-foot" [class.pos]="i.mejora !== null && i.mejora > 0" [class.neg]="i.mejora !== null && i.mejora < 0">
+        <ng-container *ngIf="i.mejora !== null">
+          <app-icon [name]="i.mejora >= 0 ? 'arrow-down' : 'arrow-up'" [size]="18" [stroke]="2.4"></app-icon>
+          {{ i.mejora >= 0 ? i.mejora : -i.mejora }}%
+        </ng-container>
+        <span *ngIf="i.mejora === null" class="sin-datos">Sin datos suficientes</span>
+      </div>
+      <p class="ind-nota" *ngIf="i.nota">{{ i.nota }}</p>
+    </div>
+  </div>
+
+  <div class="grid-2 even">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title">Tiempo de reposición (minutos)</h2>
+          <p class="card-sub">Promedio por día, últimos 7 días</p>
+        </div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background: var(--antes-azul)"></span>Antes</span>
+          <span class="legend-item"><span class="legend-dot navy"></span>Después</span>
+        </div>
+      </div>
+      <app-bar-chart [etiquetas]="etiquetasDias" [series]="serieTiempo" [alto]="230"></app-bar-chart>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title">Productos con quiebre</h2>
+          <p class="card-sub">Productos bajo el mínimo al cierre de cada día</p>
+        </div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background: var(--antes-rojo)"></span>Antes</span>
+          <span class="legend-item"><span class="legend-dot red"></span>Después</span>
+        </div>
+      </div>
+      <app-bar-chart [etiquetas]="etiquetasDias" [series]="serieQuiebre" [alto]="230"></app-bar-chart>
+    </div>
+  </div>
+
+  <div class="resumen">
+    <span class="res-check"><app-icon name="check" [size]="24" [stroke]="2.8"></app-icon></span>
+    <p *ngIf="mejoraTiempo !== null || mejoraQuiebre !== null">
+      Se ha logrado
+      <ng-container *ngIf="mejoraTiempo !== null">una reducción del <b>{{ mejoraTiempo }}%</b> en el tiempo de reposición</ng-container>
+      <ng-container *ngIf="mejoraTiempo !== null && mejoraQuiebre !== null"> y </ng-container>
+      <ng-container *ngIf="mejoraQuiebre !== null">un <b>{{ mejoraQuiebre }}%</b> {{ mejoraQuiebre >= 0 ? 'menos' : 'más' }} de quiebres de stock</ng-container>.
+    </p>
+    <p *ngIf="mejoraTiempo === null && mejoraQuiebre === null">
+      Registra reposiciones y salidas para empezar a medir la mejora frente a la línea base.
+    </p>
+    <app-wordmark [size]="34" color="var(--brand-blue)"></app-wordmark>
+    <span class="res-sep"></span>
+    <small>Mejores procesos,<br />más tiendas abastecidas.</small>
+  </div>
+
+  <p class="base-note">
+    <app-icon name="help" [size]="14"></app-icon>
+    “Antes” es la línea base del proceso manual (diagnóstico inicial). “Después” se calcula con los movimientos registrados en MassStock.
+  </p>
+</ng-container>

@@ -1,0 +1,121 @@
+<div class="page-head">
+  <div class="page-title">
+    <div class="page-title-icon big"><app-icon name="catalog" [size]="28"></app-icon></div>
+    <div>
+      <h1>Catálogo de productos</h1>
+      <p class="page-sub">{{ puedeEditar ? 'Da de alta productos nuevos o edita los existentes.' : 'Consulta los productos registrados en el catálogo.' }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="admin-layout" [class.solo-lista]="!puedeEditar">
+  <div class="card form-card" *ngIf="puedeEditar">
+    <div class="form-card-head">
+      <div class="fc-icon"><app-icon [name]="editandoId ? 'edit' : 'box-plus'" [size]="26"></app-icon></div>
+      <div>
+        <h2>{{ editandoId ? 'Editar producto' : 'Nuevo producto' }}</h2>
+        <p>{{ editandoId ? 'Actualiza los datos del producto.' : 'Registra un producto en el catálogo.' }}</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="field-row">
+        <div class="field">
+          <label for="sku">SKU <span class="req">*</span></label>
+          <input class="input" id="sku" type="text" formControlName="sku" placeholder="775..." />
+        </div>
+        <div class="field">
+          <label for="unidad">Unidad</label>
+          <input class="input" id="unidad" type="text" formControlName="unidad" placeholder="unidad" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="nombre">Nombre <span class="req">*</span></label>
+        <input class="input" id="nombre" type="text" formControlName="nombre" placeholder="Ej. Arroz Costeño 5kg" />
+      </div>
+
+      <div class="field">
+        <label for="categoria">Categoría</label>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="tag" [size]="19"></app-icon>
+          <input id="categoria" type="text" formControlName="categoria" placeholder="Ej. Abarrotes" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="stockMinimo">Stock mínimo <span class="req">*</span></label>
+          <input class="input" id="stockMinimo" type="number" min="0" formControlName="stockMinimo" />
+        </div>
+        <div class="field">
+          <label for="stockInicial">Stock inicial</label>
+          <input class="input" id="stockInicial" type="number" min="0" formControlName="stockInicial" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="proveedor">Proveedor</label>
+        <div class="input-wrap has-lead has-trail">
+          <app-icon class="lead" name="truck" [size]="19"></app-icon>
+          <select id="proveedor" formControlName="proveedorId">
+            <option value="">Sin proveedor asignado</option>
+            <option *ngFor="let p of proveedores" [value]="p.id">{{ p.nombre }}</option>
+          </select>
+          <app-icon class="trail" name="chevron-down" [size]="19"></app-icon>
+        </div>
+        <button type="button" class="card-link add-link" (click)="mostrarNuevoProveedor = !mostrarNuevoProveedor">
+          <app-icon [name]="mostrarNuevoProveedor ? 'x' : 'plus'" [size]="15"></app-icon>
+          {{ mostrarNuevoProveedor ? 'Cancelar' : 'Nuevo proveedor' }}
+        </button>
+        <div class="inline-add" *ngIf="mostrarNuevoProveedor">
+          <input class="input" type="text" [(ngModel)]="nuevoProveedorNombre" [ngModelOptions]="{standalone: true}" placeholder="Nombre del proveedor" />
+          <button type="button" class="btn btn-blue" (click)="crearProveedorRapido()">Agregar</button>
+        </div>
+      </div>
+
+      <div class="form-actions" [class.single]="!editandoId">
+        <button *ngIf="editandoId" type="button" class="btn btn-ghost" (click)="cancelarEdicion()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="enviando">
+          <app-icon [name]="editandoId ? 'check' : 'plus'" [size]="18" [stroke]="2.4"></app-icon>
+          {{ enviando ? 'Guardando…' : (editandoId ? 'Guardar cambios' : 'Crear producto') }}
+        </button>
+      </div>
+
+      <div *ngIf="feedback" class="msg" [class.ok]="feedback.type === 'ok'" [class.err]="feedback.type === 'err'">
+        <app-icon [name]="feedback.type === 'ok' ? 'check-circle' : 'alert'" [size]="16"></app-icon>{{ feedback.text }}
+      </div>
+    </form>
+  </div>
+
+  <div class="table-card">
+    <div class="list-head">
+      <h2 class="card-title">Productos existentes</h2>
+      <span class="badge">{{ productos.length }}</span>
+      <span class="badge gray solo-lectura" *ngIf="!puedeEditar"><app-icon name="eye" [size]="14"></app-icon> Solo lectura</span>
+    </div>
+    <div *ngIf="loading" class="empty">Cargando…</div>
+    <div class="table-scroll" *ngIf="!loading">
+      <table class="data-table">
+        <thead>
+          <tr><th>Producto</th><th>SKU</th><th>Categoría</th><th>Stock</th><th>Mínimo</th><th *ngIf="puedeEditar"></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of productos" [class.editing]="editandoId === p.id">
+            <td>
+              <div class="prod-cell">
+                <span class="thumb" [ngClass]="tonoThumb(p.nombre)">{{ iniciales(p.nombre) }}</span>
+                <span class="prod-name">{{ p.nombre }}</span>
+              </div>
+            </td>
+            <td class="muted">{{ p.sku }}</td>
+            <td>{{ p.categoria || '—' }}</td>
+            <td class="num">{{ p.stockActual }}</td>
+            <td>{{ p.stockMinimo }}</td>
+            <td *ngIf="puedeEditar"><button class="btn btn-ghost btn-sm" (click)="editar(p)"><app-icon name="edit" [size]="15"></app-icon> Editar</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

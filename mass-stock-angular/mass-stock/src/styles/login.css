@@ -1,0 +1,106 @@
+/* =====================================================================
+   Login: panel de marca (azul) + formulario (blanco)
+   ===================================================================== */
+.login-page {
+  min-height: 100vh; display: grid; place-items: center; padding: 32px;
+  background: radial-gradient(circle at 20% 0%, #E3EAFF 0%, transparent 50%), var(--bg);
+}
+:root.dark .login-page { background: radial-gradient(circle at 20% 0%, #16235A 0%, transparent 55%), var(--bg); }
+
+.login-frame {
+  width: 100%; max-width: 1080px; min-height: 640px; display: grid; grid-template-columns: 1.15fr 1fr;
+  border-radius: 28px; overflow: hidden; background: var(--panel); box-shadow: 0 30px 80px rgba(11, 29, 99, .18);
+}
+
+/* ---------- Panel de marca ---------- */
+.login-hero {
+  position: relative; overflow: hidden; color: #fff; padding: 40px 40px 34px;
+  display: flex; flex-direction: column;
+  background: linear-gradient(160deg, #0E36B8 0%, #0B2A8C 45%, #0A1F6E 100%);
+}
+.hero-top, .hero-copy, .hero-features, .hero-foot { position: relative; z-index: 2; }
+.hero-tag { margin: 6px 0 0; font-weight: 600; font-size: 17px; line-height: 1.2; }
+.hero-copy { margin-top: 44px; max-width: 330px; }
+.hero-copy h1 {
+  font-family: var(--font-display); font-size: 46px; line-height: 1.02; font-weight: 700; margin: 0 0 22px;
+  letter-spacing: -0.01em;
+}
+.hero-copy h1 em { font-style: normal; color: var(--brand-yellow); }
+.hero-copy p { margin: 0; font-size: 17px; line-height: 1.45; color: #E3E8FF; }
+.hero-features {
+  list-style: none; padding: 0; margin: auto 0 0; display: flex; gap: 34px; padding-top: 36px;
+}
+.hero-features li { display: flex; flex-direction: column; gap: 10px; font-size: 14.5px; line-height: 1.3; }
+.hero-features app-icon { color: var(--brand-yellow); }
+.hero-foot { margin: 34px 0 0; font-size: 13px; letter-spacing: .38em; color: #8FA6FF; }
+
+/* Fachada de tienda ilustrada (sin fotos) */
+.hero-store {
+  position: absolute; right: -30px; top: 110px; width: 330px; z-index: 1; opacity: .95;
+  transform: perspective(700px) rotateY(-14deg);
+}
+.hero-store::after {
+  content: ''; position: absolute; inset: -40px -40px -60px -120px; z-index: 2; pointer-events: none;
+  background: linear-gradient(90deg, #0B2A8C 0%, rgba(11, 42, 140, .55) 35%, transparent 70%);
+}
+.store-sign {
+  background: var(--brand-yellow); padding: 20px 26px; border-radius: 4px 4px 0 0;
+  box-shadow: 0 10px 0 #E0B400;
+}
+.store-front {
+  display: grid; grid-template-columns: 1fr 70px 1fr; gap: 8px; padding: 18px 12px 0;
+  background: #0A1A55; height: 300px;
+}
+.store-window {
+  border: 5px solid #B9C4E6; border-bottom: none; background: linear-gradient(180deg, #FFF2B3 0%, #F5D766 100%);
+  display: grid; place-items: center; text-align: center;
+}
+.store-window span { font-family: var(--font-display); color: var(--brand-navy); font-weight: 800; font-size: 15px; line-height: 1.1; transform: rotate(-6deg); }
+.store-window.shelves {
+  background:
+    repeating-linear-gradient(180deg, transparent 0 34px, #9A7B2F 34px 38px),
+    repeating-linear-gradient(90deg, #E84A3C 0 10px, #2F7BE5 10px 20px, #F5C400 20px 30px, #3DB36B 30px 40px);
+}
+.store-door { border: 5px solid #B9C4E6; border-bottom: none; background: linear-gradient(180deg, #FDF3C6, #EBD27E); }
+
+/* ---------- Formulario ---------- */
+.login-form-side { position: relative; display: grid; place-items: center; padding: 56px 48px 40px; }
+.lang {
+  position: absolute; top: 22px; right: 26px; display: inline-flex; align-items: center; gap: 7px;
+  background: none; border: 1px solid var(--line); color: var(--ink-soft); font-size: 13px; font-weight: 600;
+  padding: 7px 12px; border-radius: 100px; cursor: pointer;
+}
+.lang:hover { color: var(--ink); background: var(--hover-tint); }
+.login-form-inner { width: 100%; max-width: 380px; text-align: center; }
+.login-form-inner form, .login-form-inner .demo-hint { text-align: left; }
+.login-logo { width: 104px; height: 104px; border-radius: 22px; box-shadow: 0 10px 24px rgba(255, 208, 0, .35); }
+.login-form-inner h2 { font-family: var(--font-display); font-size: 36px; font-weight: 700; margin: 18px 0 4px; color: var(--ink); }
+:root:not(.dark) .login-form-inner h2 { color: var(--brand-navy-dark); }
+.login-copy { margin: 0 0 30px; color: var(--ink-soft); font-size: 15px; line-height: 1.5; }
+.login-submit { padding: 15px 20px; font-size: 16px; border-radius: 100px; margin-top: 6px; }
+.demo-hint { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line); text-align: center !important; }
+.demo-hint p { margin: 0 0 10px; font-size: 13px; color: var(--ink-soft); }
+.demo-hint code { background: var(--panel-2); border: 1px solid var(--line); padding: 1px 6px; border-radius: 5px; color: var(--ink); }
+.demo-users { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.demo-users button {
+  font-size: 12.5px; padding: 5px 11px; border-radius: 100px; border: 1px solid var(--line-strong);
+  background: var(--panel); color: var(--ink-soft); cursor: pointer;
+}
+.demo-users button:hover { border-color: var(--brand-blue); color: var(--brand-blue); background: var(--blue-soft); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .login-page { padding: 0; place-items: stretch; }
+  .login-frame { grid-template-columns: 1fr; border-radius: 0; min-height: 100vh; box-shadow: none; }
+  .login-hero { padding: 28px 22px 70px; min-height: 250px; }
+  .hero-copy, .hero-features, .hero-foot { display: none; }
+  .hero-store { top: 40px; right: -60px; width: 280px; }
+  .login-form-side {
+    margin-top: -46px; border-radius: 26px 26px 0 0; background: var(--panel); z-index: 3;
+    padding: 34px 20px 30px; align-items: start;
+  }
+  .lang { top: -40px; right: 18px; color: #fff; border-color: rgba(255,255,255,.3); }
+  .lang:hover { background: rgba(255,255,255,.1); color: #fff; }
+  .login-logo { width: 78px; height: 78px; border-radius: 18px; }
+  .login-form-inner h2 { font-size: 30px; }
+}

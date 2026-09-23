@@ -1,0 +1,85 @@
+<div class="page-head">
+  <div>
+    <div class="breadcrumb crumb-top"><app-icon name="refresh" [size]="16"></app-icon> Registrar reposición</div>
+    <h1>Registrar reposición</h1>
+    <p class="page-sub">Reposición de percha — el stock se actualiza automáticamente.</p>
+  </div>
+</div>
+
+<div class="form-layout">
+  <div class="card form-card">
+    <div class="form-card-head">
+      <div class="fc-icon"><app-icon name="box" [size]="28"></app-icon></div>
+      <span class="fc-sep"></span>
+      <div>
+        <h2>Datos de la reposición</h2>
+        <p>Completa la información para registrar el ingreso de productos a percha.</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="field">
+        <label for="producto">Producto <span class="req">*</span></label>
+        <div class="input-wrap has-lead has-trail">
+          <app-icon class="lead" name="search" [size]="20"></app-icon>
+          <select id="producto" formControlName="productoId">
+            <option value="" disabled>Selecciona un producto…</option>
+            <option *ngFor="let p of productos" [value]="p.id">{{ p.nombre }} ({{ p.sku }})</option>
+          </select>
+          <app-icon class="trail" name="chevron-down" [size]="20"></app-icon>
+        </div>
+        <p class="hint">Busca por nombre o SKU.</p>
+      </div>
+
+      <div class="field">
+        <label for="cantidad">Cantidad repuesta en percha <span class="req">*</span></label>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="hash" [size]="20"></app-icon>
+          <input id="cantidad" type="number" min="1" formControlName="cantidad" placeholder="Ej. 12" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="nota">Nota (opcional)</label>
+        <div class="input-wrap has-lead">
+          <app-icon class="lead" name="note" [size]="20"></app-icon>
+          <input id="nota" type="text" formControlName="nota" maxlength="100" placeholder="Ej. Pasillo 3, turno tarde" />
+        </div>
+        <div class="counter">{{ (form.value.nota || '').length }}/100</div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" (click)="cancelar()"><app-icon name="x" [size]="18"></app-icon> Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="enviando">
+          <app-icon name="plus" [size]="18" [stroke]="2.4"></app-icon>
+          {{ enviando ? 'Registrando…' : 'Registrar reposición' }}
+        </button>
+      </div>
+
+      <div *ngIf="feedback" class="msg" [class.ok]="feedback.type === 'ok'" [class.err]="feedback.type === 'err'">
+        <app-icon [name]="feedback.type === 'ok' ? 'check-circle' : 'alert'" [size]="16"></app-icon>{{ feedback.text }}
+      </div>
+    </form>
+  </div>
+
+  <div class="card side-hero">
+    <div class="hero-box">
+      <app-icon class="spark" name="pulse" [size]="34"></app-icon>
+      <div class="crate"><app-wordmark [size]="30" color="var(--on-yellow)"></app-wordmark></div>
+    </div>
+    <h3 class="side-title">Mantengamos nuestras perchas siempre llenas</h3>
+    <p class="side-copy">Registra la reposición de productos para que el stock se actualice en tiempo real y nuestros clientes siempre encuentren lo que necesitan.</p>
+
+    <div class="type-list">
+      <div class="type-item"><span class="ti-icon green solid"><app-icon name="check" [size]="22" [stroke]="2.6"></app-icon></span><div><b>Actualización automática</b><span>El stock se refleja al instante.</span></div></div>
+      <div class="type-item"><span class="ti-icon blue solid"><app-icon name="users" [size]="20"></app-icon></span><div><b>Mejor control</b><span>Evita quiebres de stock.</span></div></div>
+      <div class="type-item"><span class="ti-icon yellow"><app-icon name="trend" [size]="20"></app-icon></span><div><b>Clientes más satisfechos</b><span>Productos siempre disponibles.</span></div></div>
+    </div>
+
+    <div class="quote-box">
+      <span class="q-mark">“</span>
+      <span>Un mejor control,<br />una mejor tienda.</span>
+      <app-wordmark [size]="34"></app-wordmark>
+    </div>
+  </div>
+</div>

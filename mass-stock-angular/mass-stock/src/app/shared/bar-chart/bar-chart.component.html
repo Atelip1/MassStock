@@ -1,0 +1,23 @@
+<div class="chart-wrap" *ngIf="!vacio">
+  <svg [attr.viewBox]="'0 0 ' + ancho + ' ' + alto" class="chart-svg" role="img" aria-label="Gráfico de barras">
+    <g *ngFor="let g of guias()">
+      <line [attr.x1]="margenIzq" [attr.x2]="ancho" [attr.y1]="yDe(g)" [attr.y2]="yDe(g)" class="grid-line" />
+      <text [attr.x]="margenIzq - 8" [attr.y]="yDe(g) + 4" class="axis-label" text-anchor="end">{{ g }}</text>
+    </g>
+
+    <g *ngFor="let grupo of grupos(); let i = index" (mouseenter)="hover.set(i)" (mouseleave)="hover.set(null)">
+      <rect [attr.x]="grupo.x" [attr.y]="margenSup" [attr.width]="grupo.paso" [attr.height]="altoUtil"
+            class="hover-band" [class.on]="hover() === i" />
+      <rect *ngFor="let b of grupo.barras" [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h"
+            rx="4" [style.fill]="b.color" />
+      <text [attr.x]="grupo.centro" [attr.y]="alto - 8" class="axis-label x" text-anchor="middle">{{ grupo.label }}</text>
+    </g>
+  </svg>
+
+  <div class="tooltip" *ngIf="hover() !== null" [style.left.%]="(grupos()[hover()!].centro / ancho) * 100">
+    <b>{{ grupos()[hover()!].label }}</b>
+    <span *ngFor="let b of grupos()[hover()!].barras"><i [style.background]="b.color"></i>{{ b.nombre }}: <b>{{ b.v }}</b></span>
+  </div>
+</div>
+
+<div class="chart-empty" *ngIf="vacio">Sin datos para graficar.</div>
