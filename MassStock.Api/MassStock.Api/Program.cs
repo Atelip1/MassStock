@@ -64,10 +64,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy(AngularDevPolicy, policy =>
     {
         policy
-            .WithOrigins(
-                "https://mass-stock.vercel.app",
-                "http://localhost:4200"
-            )
+            .SetIsOriginAllowed(origin =>
+                origin == "https://mass-stock.vercel.app" ||
+                origin == "http://localhost:4200")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
