@@ -15,16 +15,23 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<JwtService>();
 
+// --- Base de datos Supabase ---
 builder.Services.AddDbContext<MassStockContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Supabase")));
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("Supabase")
+    ));
 
 // --- Autenticación JWT ---
 var jwtKey = builder.Configuration["Jwt:Key"]!;
+
 builder.Services
     .AddAuthentication(options =>
     {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+
+        options.DefaultChallengeScheme =
+            JwtBearerDefaults.AuthenticationScheme;
     })
     .AddJwtBearer(options =>
     {
@@ -32,35 +39,45 @@ builder.Services
         {
             ValidateIssuer = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
+
             ValidateAudience = true,
             ValidAudience = builder.Configuration["Jwt:Issuer"],
+
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            IssuerSigningKey =
+                new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtKey)
+                ),
+
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromSeconds(30),
+            ClockSkew = TimeSpan.FromSeconds(30)
         };
     });
 
 builder.Services.AddAuthorization();
 
-// Origen del Angular en desarrollo (ng serve). Ajusta/agrega orígenes
-// cuando despliegues el frontend a otra URL.
+// --- CORS ---
 const string AngularDevPolicy = "AngularDev";
-
-var frontendUrl = builder.Configuration["FrontendUrl"]
-                  ?? "http://localhost:4200";
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(AngularDevPolicy, policy =>
-        policy.WithOrigins(frontendUrl)
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials());
+    {
+        policy
+            .WithOrigins(
+                "https://mass-stock.vercel.app",
+                "http://localhost:4200"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
 });
+
 var app = builder.Build();
 
 // --- Middleware ---
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -68,10 +85,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors(AngularDevPolicy);
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+// --- Controladores ---
 app.MapControllers();
+
+// --- SignalR ---
 app.MapHub<StockHub>("/hubs/stock");
 
 app.Run();
