@@ -23,6 +23,13 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException(
         "Falta la variable de entorno ConnectionStrings__Supabase.");
 
+// El pooler de Supabase en modo transacción (puerto 6543) se cuelga con el
+// DISCARD ALL que Npgsql envía al reutilizar conexiones (~30 s por consulta).
+connectionString = new Npgsql.NpgsqlConnectionStringBuilder(connectionString)
+{
+    NoResetOnClose = true
+}.ConnectionString;
+
 builder.Services.AddDbContext<MassStockContext>(options =>
     options.UseNpgsql(
         connectionString,
