@@ -16,9 +16,16 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<JwtService>();
 
 // --- Base de datos Supabase ---
+// En Vercel no existe appsettings.json (está en .gitignore): configurar las
+// variables de entorno ConnectionStrings__Supabase y Jwt__Key / Jwt__Issuer.
+var connectionString = builder.Configuration.GetConnectionString("Supabase");
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException(
+        "Falta la variable de entorno ConnectionStrings__Supabase.");
+
 builder.Services.AddDbContext<MassStockContext>(options =>
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("Supabase"),
+        connectionString,
         npgsqlOptions =>
         {
             npgsqlOptions.EnableRetryOnFailure(
@@ -30,7 +37,9 @@ builder.Services.AddDbContext<MassStockContext>(options =>
     ));
 
 // --- Autenticación JWT ---
-var jwtKey = builder.Configuration["Jwt:Key"]!;
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new InvalidOperationException("Falta la variable de entorno Jwt__Key.");
 
 builder.Services
     .AddAuthentication(options =>
