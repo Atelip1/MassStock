@@ -18,7 +18,15 @@ builder.Services.AddScoped<JwtService>();
 // --- Base de datos Supabase ---
 builder.Services.AddDbContext<MassStockContext>(options =>
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("Supabase")
+        builder.Configuration.GetConnectionString("Supabase"),
+        npgsqlOptions =>
+        {
+            npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(5),
+                errorCodesToAdd: null
+            );
+        }
     ));
 
 // --- Autenticación JWT ---
