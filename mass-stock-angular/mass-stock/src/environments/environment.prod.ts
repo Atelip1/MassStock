@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://TU-DOMINIO-API/api',
-  hubUrl: 'https://TU-DOMINIO-API/hubs/stock',
+  apiBaseUrl: 'https://massstock-api-psi.vercel.app/api',
+  hubUrl: 'https://massstock-api-psi.vercel.app/hubs/stock',
 };
